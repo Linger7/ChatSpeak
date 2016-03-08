@@ -13,12 +13,12 @@ Dillinger uses a number of open source projects to work properly:
 * [Twitter Bootstrap] - great UI boilerplate for modern web apps
 * [node.js] - evented I/O for the backend
 * [Express] - fast node.js network app framework
-* [jQuery] 
-* [socket.io]
+* [jQuery]  - most useful JavaScript Library
+* [socket.io] - fastest and most reliable real-time engine
 
 
    [node.js]: <http://nodejs.org>
-   [Twitter Bootstrap]: <http://twitter.github.com/bootstrap/>
+   [Twitter Bootstrap]: <http://getbootstrap.com/>
    [jQuery]: <http://jquery.com>
    [express]: <http://expressjs.com>
    [AngularJS]: <http://angularjs.org>
