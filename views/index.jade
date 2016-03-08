@@ -1,5 +1,17 @@
-extends layout
-
+//Main UI
+extends navbar
 block content
-  h1= title
-  p Welcome to #{title}
+  div.container-fluid
+    div.row
+      div.col-xs-12.col-sm-8
+        p first column
+      div.col-xs-12.col-sm-4
+        p second column
+        div.row
+          div.col-xs-12
+            p test
+    div.row
+      div.col-xs-12.col-sm-8
+        p chat box
+      div.col-xs-12.col-sm-4
+        p ad space
