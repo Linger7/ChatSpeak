@@ -14,7 +14,7 @@ Dillinger uses a number of open source projects to work properly:
 * [node.js] - evented I/O for the backend
 * [Express] - fast node.js network app framework
 * [jQuery] 
-* socket.io
+* [socket.io]
 
 
    [node.js]: <http://nodejs.org>
@@ -22,5 +22,5 @@ Dillinger uses a number of open source projects to work properly:
    [jQuery]: <http://jquery.com>
    [express]: <http://expressjs.com>
    [AngularJS]: <http://angularjs.org>
-   [soocket.io]: <http://socket.io/>
+   [socket.io]: <http://socket.io/>
 
