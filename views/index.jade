@@ -1,17 +1,21 @@
 //Main UI
 extends navbar
 block content
-  div.container-fluid
-    div.row
-      div.col-xs-12.col-sm-8
-        p first column
-      div.col-xs-12.col-sm-4
-        p second column
+  div.container#mainContainer
+    div.row#firstRow
+      div.col-xs-12.col-sm-8#chatAreaContainer
+        div.topOffset
+        div.well
+      div.col-xs-12.col-sm-4#chatAreaSecondContainer
+        div.topOffset
         div.row
-          div.col-xs-12
-            p test
-    div.row
-      div.col-xs-12.col-sm-8
-        p chat box
-      div.col-xs-12.col-sm-4
-        p ad space
+          div.col-xs-12#chatAreaParticipantsContainer
+            p Chat Participants
+          div.col-xs-12#chatAreaRoomListContainer
+            p Chat Room List
+    div.row#secondRow
+      div.col-xs-12.col-sm-8#chatAreaInputContainer
+        h3 Enter a Message
+        textarea.form-control(rows='5')
+      div.col-xs-12.col-sm-4#chatAreaExtraSpaceContainer
+        p Extra Space
