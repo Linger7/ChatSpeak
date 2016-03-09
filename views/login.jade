@@ -1,0 +1,36 @@
+small
+	| Please sign into your account, if you do not have an account, register for one today!
+br
+br
+form.form-horizontal
+	div.form-group
+		label.col-sm-4.control-label(for='inputUserName') Username
+		div.col-sm-8
+			input.form-control(type='text', id='inputUserName')
+	div.form-group
+		label.col-sm-4.control-label(for='inputRadio') Do you already have an account?
+		div.col-sm-8#inputRadio
+			div.radio
+				label
+					input(type='radio', name="hasAccountRadio", value='register', checked='true')
+					| No, create an account now.
+			div.radio
+				label
+					input(type='radio', name="hasAccountRadio", value='signIn')
+					| Yes, my password is:
+			input.form-control(type='password', id='inputPassword', disabled='true')
+		script(type='text/javascript').
+			$('input[type=radio][name=hasAccountRadio]').change(function() {
+				if (this.value == 'signIn') {
+					$('#inputPassword').prop('disabled', false);
+					$('#inputSignButton').text('Log In').addClass('btn-success').removeClass('btn-primary');
+				} else if (this.value == 'register') {
+					$('#inputPassword').prop('disabled', true);
+					$('#inputSignButton').text('Sign Up').addClass('btn-primary').removeClass('btn-success');
+				}
+			});
+	br
+	div.form-group
+		div.col-sm-offset-5.col-sm-7
+			button.btn.btn-primary.btn-lg(type='submit' id='inputSignButton') Sign Up
+

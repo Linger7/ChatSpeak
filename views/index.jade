@@ -19,3 +19,12 @@ block content
         textarea.form-control(rows='5')
       div.col-xs-12.col-sm-4#chatAreaExtraSpaceContainer
         p Extra Space
+  div.modal.fade#mainModal(tabindex='-1', role='dialog', area-labelledby='myModalLebel', area-hidden='true')
+    div.modal-dialog.modal-large
+      div.modal-content#mainModalContent
+        div.modal-header
+          button.close(type='button', data-dismiss='modal' aria-hidden='true')
+            i.fa.fa-times(style='color:red')
+          h4.modal-title#mainModalTitle Title
+        div.modal-body
+          div#mainModalBody
