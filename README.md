@@ -7,7 +7,7 @@ ChatSpeak will be a stand-alone web application designed to give users the abili
 
 ### Tech
 
-Dillinger uses a number of open source projects to work properly:
+ChatSpeak uses a number of open source projects to work properly:
 
 * [AngularJS] - HTML enhanced for web apps!
 * [Twitter Bootstrap] - great UI boilerplate for modern web apps
