@@ -23,14 +23,14 @@ form.form-horizontal
 			$('input[type=radio][name=hasAccountRadio]').change(function() {
 				if (this.value == 'signIn') {
 					$('#inputPassword').prop('disabled', false);
-					$('#inputSignButton').text('Log In').addClass('btn-success').removeClass('btn-primary');
+					$('#inputSignButton').text('Log In').addClass('btn-success').removeClass('btn-primary').attr('onclick', 'ajaxModalCall("accounts/login")');
 				} else if (this.value == 'register') {
 					$('#inputPassword').prop('disabled', true);
-					$('#inputSignButton').text('Sign Up').addClass('btn-primary').removeClass('btn-success');
+					$('#inputSignButton').text('Sign Up').addClass('btn-primary').removeClass('btn-success').attr('onclick', 'ajaxModalCall("accounts/register")');
 				}
 			});
 	br
 	div.form-group
 		div.col-sm-offset-5.col-sm-7
-			button.btn.btn-primary.btn-lg(type='submit' id='inputSignButton') Sign Up
+			button.btn.btn-primary.btn-lg(id='inputSignButton' onclick='ajaxModalCall("accounts/register")') Sign Up
 

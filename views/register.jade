@@ -1,0 +1,84 @@
+div.alert.alert-danger#errorDisplay(role='alert', style='display: none')
+form.form-horizontal#registrationForm
+	div.form-group
+		label.col-sm-4.control-label(for='inputUserName' maxlength='24') Username
+		div.col-sm-8
+			input.form-control(type='text', name='inputUserName', id='inputUserName' required='true')
+	div.form-group
+		label.col-sm-4.control-label(for='inputEmail') Email
+		div.col-sm-8
+			input.form-control(type='email', name='inputEmail', id='inputEmail' required='true' maxlength='255')
+	hr
+	div.form-group
+		label.col-sm-4.control-label(for='inputPassword') Password
+		div.col-sm-8
+			input.form-control(type='password', name='inputPassword', id='inputPassword' required='true' maxlength='128')
+	div.form-group
+		label.col-sm-4.control-label(for='inputConfirmPassword') Confirm Password
+		div.col-sm-8
+			input.form-control(type='password', name='inputConfirmPassword', id='inputConfirmPassword' required='true' maxlength='128')
+	hr
+	div.form-group
+		div.col-sm-offset-4.col-sm-8
+			div.checkbox
+				label
+					input#inputAgreeToTerms(type='checkbox' required='true')
+					| I agree to the terms and conditions
+	div.form-group
+		div.col-sm-offset-5.col-sm-7
+			button.btn.btn-success.btn-lg(type='submit' onclick='chatspeak_registerAccount()') Sign Up
+	script(type='text/javascript').
+		function chatspeak_registerAccount(){
+			var userName = $('#inputUserName').val();
+			var email = $('#inputEmail').val();
+			var password = $('#inputPassword').val();
+			var confirmPassword = $('#inputConfirmPassword').val();
+			var agreeToTerms = $('#inputAgreeToTerms').is(':checked');
+			var formData = $('#registrationForm').serialize();
+
+			var errors = [];
+			if(userName === null || userName.length < 4 || userName.length > 25){
+				errors.push("Username must be between 4 and 25 characters long.");
+			}
+
+			var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+			if(email === null || email.length > 255 || email.length == 0 || !re.test(email)){
+				errors.push("Not a valid Email Address.");
+			}
+
+			if(password === null || password.length < 6 || password.length > 128){
+				errors.push("Your password must be between 6 and 128 characters (letters, symbols or numbers)");
+			}
+			if(password != confirmPassword){
+				errors.push("Your passwords do not match!");
+			}
+
+			if(!agreeToTerms){
+				errors.push("You must agree to the terms and conditions.");
+			}
+
+			if(errors.length > 0){
+				var errorDisplay = $('#errorDisplay');
+				errorDisplay.html('');
+				errorDisplay.show();
+				errorDisplay.append('<ul>');
+				for(index in errors){
+					$('#errorDisplay').append('<li>' + errors[index] + '</li>');
+				}
+				errorDisplay.append('</ul>');
+			} else {
+				//Submit Registration Form
+				$.ajax({
+					url: "http://" + window.location.host + "/accounts/register",
+					type: 'POST',
+					data: formData
+				}).done(function (data) {
+					$('#mainModal').modal('show');
+					$('#mainModalTitle').html(data.title);
+					$('#mainModalBody').html(data.body);
+				});
+			}
+
+			event.preventDefault();
+			return false;
+		};

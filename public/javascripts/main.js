@@ -28,13 +28,16 @@ $(window).on("load", function() {
 
 });
 
-function callNavBarButton(){
+function ajaxModalCall(path){
     $.ajax({
-        url: mainURL + "accounts",
+        url: mainURL + path,
         type: 'GET'
     }).done(function(data) {
         $('#mainModal').modal('show');
         $('#mainModalTitle').html(data.title);
         $('#mainModalBody').html(data.body);
     });
+
+    event.preventDefault();
+    return false;
 }
