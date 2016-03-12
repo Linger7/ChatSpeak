@@ -73,9 +73,9 @@ form.form-horizontal#registrationForm
 					type: 'POST',
 					data: formData
 				}).done(function (data) {
-					$('#mainModal').modal('show');
-					$('#mainModalTitle').html(data.title);
-					$('#mainModalBody').html(data.body);
+						$('#mainModal').modal('show');
+						$('#mainModalTitle').html(data.title);
+						$('#mainModalBody').html(data.body);
 				});
 			}
 
