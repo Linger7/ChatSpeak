@@ -63,7 +63,7 @@ form.form-horizontal#registrationForm
 				errorDisplay.show();
 				errorDisplay.append('<ul>');
 				for(index in errors){
-					$('#errorDisplay').append('<li>' + errors[index] + '</li>');
+					errorDisplay.append('<li>' + errors[index] + '</li>');
 				}
 				errorDisplay.append('</ul>');
 			} else {
