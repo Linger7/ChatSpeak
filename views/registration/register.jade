@@ -3,7 +3,7 @@ form.form-horizontal#registrationForm
 	div.form-group
 		label.col-sm-4.control-label(for='inputUserName' maxlength='24') Username
 		div.col-sm-8
-			input.form-control(type='text', name='inputUserName', id='inputUserName' required='true')
+			input.form-control(type='text', name='inputUserName', id='inputUserName' required='true' value='#{params.username}')
 	div.form-group
 		label.col-sm-4.control-label(for='inputEmail') Email
 		div.col-sm-8

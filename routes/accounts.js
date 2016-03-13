@@ -49,7 +49,7 @@ router.get('/register', function(req, res, next){
     //Check if signed in here (add middleware)
 
     //If not signed in then proceed to register
-    res.render('registration/register', function(err, html){
+    res.render('registration/register', {params: {username: req.param('username')}}, function(err, html){
         res.send(router.generateResponseObject('<i class="fa fa-user-plus"></i> Register', html));
     });
 });

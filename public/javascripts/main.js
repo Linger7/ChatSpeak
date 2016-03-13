@@ -28,9 +28,11 @@ $(window).on("load", function() {
 
 });
 
+var tempUserName;
 function ajaxModalCall(path){
     $.ajax({
         url: mainURL + path,
+        data: {username : $('#inputUserName').val()},
         type: 'GET'
     }).done(function(data) {
         $('#mainModal').modal('show');
