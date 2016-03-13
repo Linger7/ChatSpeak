@@ -41,36 +41,3 @@ function ajaxModalCall(path){
     event.preventDefault();
     return false;
 }
-
-function cs_userSignIn(){
-    var data = $('#loginForm').serialize();
-    $.ajax({
-        url: mainURL + "accounts/login",
-        type: 'POST',
-        data: data
-    }).done(function(data) {
-        var status = data.status;
-        console.log(status);
-
-        if(status === "Success"){
-            $('#mainModal').modal('hide');
-        } else if(status === "Wrong Password"){
-            var errorDisplay = $('#errorDisplay');
-            errorDisplay.html('');
-            errorDisplay.show();
-            errorDisplay.append('<ul>');
-            errorDisplay.append('<li>Incorrect Password!</li>');
-            errorDisplay.append('</ul>');
-        } else {
-            var errorDisplay = $('#errorDisplay');
-            errorDisplay.html('');
-            errorDisplay.show();
-            errorDisplay.append('<ul>');
-            errorDisplay.append('<li>No such username!</li>');
-            errorDisplay.append('</ul>');
-        }
-    });
-
-    event.preventDefault();
-    return false;
-}

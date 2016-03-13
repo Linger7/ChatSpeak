@@ -34,4 +34,58 @@ form.form-horizontal#loginForm
 	div.form-group
 		div.col-sm-offset-5.col-sm-7
 			button.btn.btn-primary.btn-lg(id='inputSignButton' onclick='ajaxModalCall("accounts/register")') Sign Up
+	script(type='text/javascript').
+		function cs_userSignIn() {
+			var userName = $('#inputUserName').val();
+			var password = $('#inputPassword').val();
+			var data = $('#loginForm').serialize();
+			var errors = [];
 
+			if (userName === null || userName.length < 4 || userName.length > 25) {
+				errors.push("You must enter your username, username's are between 4 and 25 characters long.");
+			}
+			if (password === null || password.length < 6 || password.length > 128) {
+				errors.push("You must enter your password, password's are between 6 and 128 characters (letters, symbols or numbers).");
+			}
+
+			if (errors.length > 0) {
+				var errorDisplay = $('#errorDisplay');
+				errorDisplay.html('');
+				errorDisplay.show();
+				errorDisplay.append('<ul>');
+				for (index in errors) {
+					errorDisplay.append('<li>' + errors[index] + '</li>');
+				}
+				errorDisplay.append('</ul>');
+			} else {
+				$.ajax({
+					url: mainURL + "accounts/login",
+					type: 'POST',
+					data: data
+				}).done(function (data) {
+					var status = data.status;
+					console.log(status);
+
+					if (status === "Success") {
+						$('#mainModal').modal('hide');
+					} else if (status === "Wrong Password") {
+						var errorDisplay = $('#errorDisplay');
+						errorDisplay.html('');
+						errorDisplay.show();
+						errorDisplay.append('<ul>');
+						errorDisplay.append('<li>Incorrect Password!</li>');
+						errorDisplay.append('</ul>');
+					} else {
+						var errorDisplay = $('#errorDisplay');
+						errorDisplay.html('');
+						errorDisplay.show();
+						errorDisplay.append('<ul>');
+						errorDisplay.append('<li>No such username!</li>');
+						errorDisplay.append('</ul>');
+					}
+				});
+			}
+
+			event.preventDefault();
+			return false;
+		}
