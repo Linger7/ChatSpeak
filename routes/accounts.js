@@ -4,11 +4,26 @@ var bcrypt = require('bcrypt');
 var mysqlConnection = require('../utilities/mysqlConnection.js')
 var config = require('../config/config.js');
 
-/* GET Account Login/Register */
-router.get('/', function(req, res, next) {
-    //Check if signed in here
+//Authorize only signed in users
+var userAuth = function(req, res, next){
+    if(req.session && req.session.auth){
+        return next();
+    } else {
+        res.sendStatus(401);
+    }
+};
 
-    //If not signed in then send register/login view
+//Authorize only guests (non-signed in) users
+var guestAuth = function(req, res, next){
+    if(req.session && req.session.auth){
+        res.sendStatus(401);
+    } else {
+        return next();
+    }
+};
+
+/* GET Account Login/Register */
+router.get('/', guestAuth, function(req, res, next) {
     res.render('registration/login', function(err, html) {
         res.send(router.generateResponseObject('<i class="fa fa-user"></i>  Sign In or Register', html));
     });
@@ -30,6 +45,7 @@ router.post('/login', function(req, res, next){
                     bcrypt.compare(password, hashedPW, function (err, result) {
                         if (result == true) {
                             responseObject.status = 'Success';
+                            req.session.auth = true;
                         } else {
                             responseObject.status = 'Wrong Password';
                         }

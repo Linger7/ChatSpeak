@@ -14,4 +14,7 @@ block navbar
 				div#navbar.navbar-collapse.collapse
 					ul.nav.navbar-nav.navbar-right
 						li.active#navbarItemOne
-							a(href='#' onclick='ajaxModalCall("accounts")') Register
+							if isAuthed == true
+								a(href='#' onclick='ajaxModalCall("accounts")') Profile
+							else
+								a(href='#' onclick='ajaxModalCall("accounts")') Login

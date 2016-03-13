@@ -3,7 +3,12 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'ChatSpeak' });
+  var isAuthed = false;
+  if(req.session && req.session.auth){
+    isAuthed = true;
+  }
+
+  res.render('index', { title: 'ChatSpeak', isAuthed: isAuthed });
 });
 
 module.exports = router;
