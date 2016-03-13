@@ -58,14 +58,7 @@ form.form-horizontal#registrationForm
 			}
 
 			if(errors.length > 0){
-				var errorDisplay = $('#errorDisplay');
-				errorDisplay.html('');
-				errorDisplay.show();
-				errorDisplay.append('<ul>');
-				for(index in errors){
-					errorDisplay.append('<li>' + errors[index] + '</li>');
-				}
-				errorDisplay.append('</ul>');
+				showErrors(errors);
 			} else {
 				//Submit Registration Form
 				$.ajax({
@@ -73,12 +66,27 @@ form.form-horizontal#registrationForm
 					type: 'POST',
 					data: formData
 				}).done(function (data) {
-						$('#mainModal').modal('show');
-						$('#mainModalTitle').html(data.title);
-						$('#mainModalBody').html(data.body);
+						if(data.state === "Failed"){
+							errors.push(data.message);
+							showErrors(errors);
+						} else {
+							$('#mainModal').modal('show');
+							$('#mainModalTitle').html(data.title);
+							$('#mainModalBody').html(data.body);
+						}
 				});
 			}
 
 			event.preventDefault();
 			return false;
+		};
+		function showErrors(errors){
+			var errorDisplay = $('#errorDisplay');
+			errorDisplay.html('');
+			errorDisplay.show();
+			errorDisplay.append('<ul>');
+			for (index in errors) {
+				errorDisplay.append('<li>' + errors[index] + '</li>');
+			}
+			errorDisplay.append('</ul>');
 		};

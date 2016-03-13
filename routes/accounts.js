@@ -63,17 +63,17 @@ router.post('/register', function(req, res, next){
 
     //Throw a 404 to someone who bypassed clientside validation, temporarily, to do later
     if(userName === null || userName.length < 4 || userName.length > 25){
-        res.send(404);
+        router.sendError(res, "Username must be between 4 and 25 characters long.");
     } else if(email === null || email.length > 255 || email.length == 0 || !re.test(email)){
-        res.send(404);
-    } else if(password === null || password.length < 6 || password.length > 12){
-        res.send(404);
+        router.sendError(res, "Email must be a valid email including the @ character.");
+    } else if(password === null || password.length < 6 || password.length > 128){
+        router.sendError(res, "Password must be between 6 and 128 characters long.");
     }
     bcrypt.genSalt(10, function(err, salt) {
         bcrypt.hash(password, salt, function(err, hash) {
             if(err){
                 console.log(err);
-                router.sendError(res, 'Unable to encrypt password!');
+                router.sendError(res, "Unable to encrypt password!");
             } else {
                 // Store hash in your password DB.
                 var connection = mysqlConnection();
@@ -91,8 +91,12 @@ router.post('/register', function(req, res, next){
                                 }
                             }
                         } else {
+                            var responseObject = {};
+                            responseObject.state = "Success";
+                            responseObject.title = "<i class='fa fa-thumbs-up'></i> Congratulations!";
                             res.render('registration/success', {params: {username: userName}}, function (err, html) {
-                                res.send(router.generateResponseObject('<i class="fa fa-thumbs-up"></i> Congratulations!', html));
+                                responseObject.body = html;
+                                res.send(responseObject);
                             });
                         }
                     });
@@ -104,9 +108,10 @@ router.post('/register', function(req, res, next){
 
 
 router.sendError = function(res, message){
-    res.render('registration/error', {params: {message: message}}, function (err, html) {
-        res.send(router.generateResponseObject('<i class="fa fa-exclamation-triangle"></i> Oops something went wrong!', html));
-    });
+    var responseObject = {};
+    responseObject.state = "Failed";
+    responseObject.message = message;
+    res.send(responseObject);
 };
 
 //Create JSON Object with the Modal Title and Body
