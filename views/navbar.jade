@@ -15,6 +15,7 @@ block navbar
 					ul.nav.navbar-nav.navbar-right
 						li.active#navbarItemOne
 							if isAuthed == true
-								a(href='#' onclick='ajaxModalCall("accounts")') Profile
+								a#navbarItemOneLink(href='#' onclick='ajaxModalCall("profile")')
+									| #{ username }
 							else
-								a(href='#' onclick='ajaxModalCall("accounts")') Login
+								a#navbarItemOneLink(href='#' onclick='ajaxModalCall("accounts")') Login

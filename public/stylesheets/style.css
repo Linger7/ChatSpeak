@@ -17,6 +17,10 @@ a {
   color: #00B7FF;
 }
 
+.center {
+  text-align: center;
+}
+
 /* == Navigation Bar Styling == */
 .navbar-default {
   background-color: #2c82c9;

@@ -1,14 +1,15 @@
 var express = require('express');
 var router = express.Router();
+var mysqlConnection = require('../utilities/mysqlConnection.js')
 
-/* GET home page. */
+/* GET Home Page. */
 router.get('/', function(req, res, next) {
-  var isAuthed = false;
-  if(req.session && req.session.auth){
-    isAuthed = true;
-  }
 
-  res.render('index', { title: 'ChatSpeak', isAuthed: isAuthed });
+    if(req.session && req.session.auth){
+        res.render('index', { title: 'ChatSpeak', isAuthed: true, username: req.session.username });
+    } else {
+        res.render('index', { title: 'ChatSpeak', isAuthed: false });
+    }
 });
 
 module.exports = router;

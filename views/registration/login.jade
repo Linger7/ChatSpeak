@@ -64,10 +64,10 @@ form.form-horizontal#loginForm
 					data: data
 				}).done(function (data) {
 					var status = data.status;
-					console.log(status);
 
 					if (status === "Success") {
 						$('#mainModal').modal('hide');
+						$('#navbarItemOneLink').html(userName).attr('onclick', 'ajaxModalCall("profile")');
 					} else if (status === "Wrong Password") {
 						var errorDisplay = $('#errorDisplay');
 						errorDisplay.html('');

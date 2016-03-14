@@ -22,20 +22,21 @@ var guestAuth = function(req, res, next){
     }
 };
 
-/* GET Account Login/Register */
+/* GET Account Login/Register View */
 router.get('/', guestAuth, function(req, res, next) {
     res.render('registration/login', function(err, html) {
         res.send(router.generateResponseObject('<i class="fa fa-user"></i>  Sign In or Register', html));
     });
 });
 
-router.post('/login', function(req, res, next){
+/* Account Login with username and password */
+router.post('/login', guestAuth, function(req, res, next){
     var userName = req.body.inputUserName;
     var password = req.body.inputPassword;
 
-    var connection = mysqlConnection();
-    connection.getConnection(function(err, connection) {
-        connection.query('SELECT password FROM user WHERE username = ?', [userName],function(err, rows, fields){
+    var pool = mysqlConnection();
+    pool.getConnection(function(err, connection) {
+        connection.query('SELECT password, uid, username FROM user WHERE username = ?', [userName],function(err, rows, fields){
             if(err){
                 router.sendError(res, 'Database issues, unable to login!');
             } else {
@@ -46,6 +47,8 @@ router.post('/login', function(req, res, next){
                         if (result == true) {
                             responseObject.status = 'Success';
                             req.session.auth = true;
+                            req.session.uid = rows[0].uid;
+                            req.session.username = rows[0].username;
                         } else {
                             responseObject.status = 'Wrong Password';
                         }
@@ -61,17 +64,14 @@ router.post('/login', function(req, res, next){
 });
 
 /* Display Account Registration Form */
-router.get('/register', function(req, res, next){
-    //Check if signed in here (add middleware)
-
-    //If not signed in then proceed to register
-    res.render('registration/register', {params: {username: req.param('username')}}, function(err, html){
+router.get('/register', guestAuth, function(req, res, next){
+    res.render('registration/register', {params: {username: req.query.username}}, function(err, html){
         res.send(router.generateResponseObject('<i class="fa fa-user-plus"></i> Register', html));
     });
 });
 
 /* Register an account */
-router.post('/register', function(req, res, next){
+router.post('/register', guestAuth, function(req, res, next){
     var userName = req.body.inputUserName;
     var email = req.body.inputEmail;
     var password = req.body.inputPassword;
@@ -91,9 +91,9 @@ router.post('/register', function(req, res, next){
                 console.log(err);
                 router.sendError(res, "Unable to encrypt password!");
             } else {
-                // Store hash in your password DB.
-                var connection = mysqlConnection();
-                connection.getConnection(function (err, connection) {
+                // Store Hash in password DB
+                var pool = mysqlConnection();
+                pool.getConnection(function (err, connection) {
                     connection.query('INSERT INTO user (username, password, email, usergroup_uid, ip_address) VALUES (?, ?, ?, ?, ?)', [userName, hash, email, config.defaults.usergroup, req.connection.remoteAddress], function (err, rows, fields) {
                         if (err) {
                             if (err.code === 'ER_DUP_ENTRY') {
@@ -121,7 +121,6 @@ router.post('/register', function(req, res, next){
         });
     });
 });
-
 
 router.sendError = function(res, message){
     var responseObject = {};
