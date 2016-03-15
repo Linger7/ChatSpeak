@@ -3,6 +3,8 @@ var router = express.Router();
 var bcrypt = require('bcrypt');
 var mysqlConnection = require('../utilities/mysqlConnection.js')
 var config = require('../config/config.js');
+var validator = require('validator');
+var xssFilters = require('xss-filters');
 
 //Authorize only signed in users
 var userAuth = function(req, res, next){
@@ -47,9 +49,11 @@ router.post('/login', guestAuth, function(req, res, next){
                         if (result == true) {
                             responseObject.status = 'Success';
                             responseObject.avatarPath = rows[0].avatar_path;
+                            responseObject.username = xssFilters.inHTMLData(rows[0].username);
                             req.session.auth = true;
                             req.session.uid = rows[0].uid;
                             req.session.username = rows[0].username;
+
                         } else {
                             responseObject.status = 'Wrong Password';
                         }
@@ -66,7 +70,7 @@ router.post('/login', guestAuth, function(req, res, next){
 
 /* Display Account Registration Form */
 router.get('/register', guestAuth, function(req, res, next){
-    res.render('registration/register', {params: {username: req.query.username}}, function(err, html){
+    res.render('registration/register', {params: {username: xssFilters.inHTMLData(req.query.username)}}, function(err, html){
         res.send(router.generateResponseObject('<i class="fa fa-user-plus"></i> Register', html));
     });
 });
@@ -76,12 +80,11 @@ router.post('/register', guestAuth, function(req, res, next){
     var userName = req.body.inputUserName;
     var email = req.body.inputEmail;
     var password = req.body.inputPassword;
-    var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
     //Throw a 404 to someone who bypassed clientside validation, temporarily, to do later
     if(userName === null || userName.length < 4 || userName.length > 25){
         router.sendError(res, "Username must be between 4 and 25 characters long.");
-    } else if(email === null || email.length > 255 || email.length == 0 || !re.test(email)){
+    } else if(email === null || email.length > 255 || email.length == 0 || !validator.isEmail(email)){
         router.sendError(res, "Email must be a valid email including the @ character.");
     } else if(password === null || password.length < 6 || password.length > 128){
         router.sendError(res, "Password must be between 6 and 128 characters long.");
@@ -112,7 +115,8 @@ router.post('/register', guestAuth, function(req, res, next){
                             responseObject.state = "Success";
                             responseObject.title = "<i class='fa fa-thumbs-up'></i> Congratulations!";
                             responseObject.avatarPath = config.defaults.avatarPath;
-                            res.render('registration/success', {params: {username: userName}}, function (err, html) {
+                            responseObject.username = xssFilters.inHTMLData(userName);
+                            res.render('registration/success', {params: {username: xssFilters.inHTMLData(userName)}}, function (err, html) {
                                 responseObject.body = html;
                                 res.send(responseObject);
                             });
@@ -121,6 +125,17 @@ router.post('/register', guestAuth, function(req, res, next){
                 });
             }
         });
+    });
+});
+
+router.get('/logout', userAuth, function(req, res, next){
+    req.session.destroy(function(err){
+        if(err){
+            console.log('Logout error: ' + err);
+            res.send("0");
+        } else {
+            res.send("1");
+        }
     });
 });
 

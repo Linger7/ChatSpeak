@@ -51,6 +51,20 @@ function setModalToLoading(){
     $('#mainModalBody').html('<div class="center"><i class="fa fa-refresh fa-spin fa-5x"></i></div>');
 }
 
+function callLogOut(){
+    $.ajax({
+        url: mainURL + "accounts/logout",
+        type: 'GET'
+    }).done(function(data) {
+        if(data == 1){
+            location.reload();
+        } else {
+            alert('Unable to log out, error!');
+        }
+    });
+}
+
+//Gets navbar drop drop menu options
 function loadNavBarDropDownMenu(){
     //If the dropdown exists in the navbar, load dropdown options
     if($('#navBarDropLink').length) {
