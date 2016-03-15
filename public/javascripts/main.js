@@ -1,6 +1,6 @@
 var mainURL = "http://" + window.location.host + "/";
 $(document).ready(function(){
-
+    loadNavBarDropDownMenu();
 });
 
 //Resize based on browser height
@@ -49,4 +49,35 @@ function setModalToLoading(){
     $('#mainModal').modal('show');
     $('#mainModalTitle').html('Loading...');
     $('#mainModalBody').html('<div class="center"><i class="fa fa-refresh fa-spin fa-5x"></i></div>');
+}
+
+function loadNavBarDropDownMenu(){
+    //If the dropdown exists in the navbar, load dropdown options
+    if($('#navBarDropLink').length) {
+        $.ajax({
+            url: mainURL + "profile/navbar",
+            type: 'GET'
+        }).done(function (data) {
+            $('#navbarDropDown').append(data);
+        });
+    }
+}
+
+//Updates the navbar after registration or sign in, to reflect correct information
+function updateNavBar(username, avatarPath){
+    var link = $('#navBarLink');
+    link.addClass('dropdown-toggle');
+    link.attr('id', 'navBarDropLink');
+    link.attr('onclick', '');
+    link.attr('data-toggle', 'dropdown');
+    link.attr('role', 'button');
+    link.attr('aria-haspopup', true);
+    link.attr('aria-expanded', false);
+
+    //Add avatar and alter username
+    link.empty();
+    link.append('<img src="' + avatarPath + '" id="navbarAvatar" class="img-circle"/>');
+    link.append('<span id="navbarUsername">' + username + '</span>');
+
+    loadNavBarDropDownMenu();
 }

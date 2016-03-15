@@ -67,8 +67,9 @@ form.form-horizontal#loginForm
 
 					if (status === "Success") {
 						$('#mainModal').modal('hide');
-						$('#navBarLink').html(userName).attr('onclick', 'ajaxModalCall("profile")');
+						updateNavBar(userName, data.avatarPath);
 					} else if (status === "Wrong Password") {
+						//TODO update here
 						var errorDisplay = $('#errorDisplay');
 						errorDisplay.html('');
 						errorDisplay.show();

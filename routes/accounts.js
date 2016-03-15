@@ -36,7 +36,7 @@ router.post('/login', guestAuth, function(req, res, next){
 
     var pool = mysqlConnection();
     pool.getConnection(function(err, connection) {
-        connection.query('SELECT password, uid, username FROM user WHERE username = ?', [userName],function(err, rows, fields){
+        connection.query('SELECT password, uid, username, avatar_path FROM user WHERE username = ?', [userName],function(err, rows, fields){
             if(err){
                 router.sendError(res, 'Database issues, unable to login!');
             } else {
@@ -46,6 +46,7 @@ router.post('/login', guestAuth, function(req, res, next){
                     bcrypt.compare(password, hashedPW, function (err, result) {
                         if (result == true) {
                             responseObject.status = 'Success';
+                            responseObject.avatarPath = rows[0].avatar_path;
                             req.session.auth = true;
                             req.session.uid = rows[0].uid;
                             req.session.username = rows[0].username;
@@ -94,7 +95,7 @@ router.post('/register', guestAuth, function(req, res, next){
                 // Store Hash in password DB
                 var pool = mysqlConnection();
                 pool.getConnection(function (err, connection) {
-                    connection.query('INSERT INTO user (username, password, email, usergroup_uid, ip_address) VALUES (?, ?, ?, ?, ?)', [userName, hash, email, config.defaults.usergroup, req.connection.remoteAddress], function (err, rows, fields) {
+                    connection.query('INSERT INTO user (username, password, email, usergroup_uid, ip_address, avatar_path) VALUES (?, ?, ?, ?, ?, ?)', [userName, hash, email, config.defaults.usergroup, req.connection.remoteAddress, config.defaults.avatarPath], function (err, rows, fields) {
                         if (err) {
                             if (err.code === 'ER_DUP_ENTRY') {
                                 var errorMessage = String(err.message);
@@ -110,6 +111,7 @@ router.post('/register', guestAuth, function(req, res, next){
                             var responseObject = {};
                             responseObject.state = "Success";
                             responseObject.title = "<i class='fa fa-thumbs-up'></i> Congratulations!";
+                            responseObject.avatarPath = config.defaults.avatarPath;
                             res.render('registration/success', {params: {username: userName}}, function (err, html) {
                                 responseObject.body = html;
                                 res.send(responseObject);

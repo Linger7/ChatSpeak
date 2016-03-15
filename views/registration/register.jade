@@ -73,6 +73,8 @@ form.form-horizontal#registrationForm
 							$('#mainModal').modal('show');
 							$('#mainModalTitle').html(data.title);
 							$('#mainModalBody').html(data.body);
+
+							updateNavBar(userName, data.avatarPath);
 						}
 				});
 			}

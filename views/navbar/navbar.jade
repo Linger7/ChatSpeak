@@ -1,4 +1,4 @@
-extends layout
+extends ../layout
 
 block navbar
 	nav.navbar.navbar-default.navbar-fixed-top#navbarContainer
@@ -10,24 +10,13 @@ block navbar
 						span.icon-bar
 						span.icon-bar
 					a.navbar-brand(href='#')
-						img(src='images/logos/logo.png', id='navbarLogo')
+						img(src=logo, id='navbarLogo')
 				div#navbar.navbar-collapse.collapse
 					ul.nav.navbar-nav.navbar-right
-						li.dropdown
+						li.dropdown#navbarDropDown
 							if isAuthed == true
-								a.dropdown-toggle#navBarLink(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
+								a.dropdown-toggle#navBarDropLink(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
 									img(src='images/default/avatar.png', id='navbarAvatar' class='img-circle')
 									span#navBarUsername #{ username }
-								ul.dropdown-menu
-									li
-										a(href='#') <i class="fa fa-user navbarIcon"></i>Profile
-									li
-										a(href='#') <i class="fa fa-cog navbarIcon"></i>Settings
-									li
-										a(href='#') <i class="fa fa-sign-out navbarIcon"></i>Log Out
-									li.divider(role='seperator')
-									li.dropdown-header Admin Panel
-									li
-										a(href='#') <i class="fa fa-server navbarIcon"></i>Server Settings
 							else
 								a#navBarLink(href='#' onclick='ajaxModalCall("accounts")') Login
