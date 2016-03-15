@@ -47,6 +47,6 @@ function ajaxModalCall(path){
 
 function setModalToLoading(){
     $('#mainModal').modal('show');
-    $('#mainModalTitle').html('Loading..');
+    $('#mainModalTitle').html('Loading...');
     $('#mainModalBody').html('<div class="center"><i class="fa fa-refresh fa-spin fa-5x"></i></div>');
 }
