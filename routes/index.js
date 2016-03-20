@@ -7,7 +7,7 @@ var config = require('../config/config.js');
 router.get('/', function(req, res, next) {
 
     if(req.session && req.session.auth){
-        res.render('index', { logo: config.defaults.logo, title: 'ChatSpeak', isAuthed: true, username: req.session.username });
+        res.render('index', { logo: config.defaults.logo, title: 'ChatSpeak', isAuthed: true, username: req.session.username, avatar: req.session.avatarPath });
     } else {
         res.render('index', { logo: config.defaults.logo, title: 'ChatSpeak', isAuthed: false });
     }

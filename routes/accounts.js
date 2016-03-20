@@ -54,6 +54,7 @@ router.post('/login', guestAuth, function(req, res, next){
                             req.session.auth = true;
                             req.session.uid = rows[0].uid;
                             req.session.username = rows[0].username;
+                            req.session.avatarPath = rows[0].avatar_path;
 
                         } else {
                             customResponseObject.status = 'Wrong Password';

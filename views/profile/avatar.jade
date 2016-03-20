@@ -46,8 +46,11 @@ div.row
 						contentType: false,
 					}).done(function (data) {
 						if(data.status === "Success"){
+							//Update Navbar Avatar
+							$('#navbarAvatar').attr('src', data.avatarPath);
 							ajaxModalCall("profile");
 						} else {
+							//Display Error
 							ajaxModalCall("profile/avatar", data.message);
 						}
 					});

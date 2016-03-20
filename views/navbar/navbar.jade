@@ -16,7 +16,7 @@ block navbar
 						li.dropdown#navbarDropDown
 							if isAuthed == true
 								a.dropdown-toggle#navBarDropLink(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
-									img(src='images/default/avatar.png', id='navbarAvatar' class='img-circle')
+									img(src=avatar, id='navbarAvatar' class='img-circle')
 									span#navBarUsername #{ username }
 							else
 								a#navBarLink(href='#' onclick='ajaxModalCall("accounts")') Login

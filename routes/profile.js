@@ -74,9 +74,12 @@ router.post('/avatar', multer({ dest: './uploads/avatars'}).single('inputAvatarF
             fs.rename('./uploads/avatars/' + uploadedFile.filename, './public/images/avatars/' + uploadedFile.filename + '.png', function(err){
                 if(err) throw err;
                 pool.getConnection(function(err, connection){
-                    connection.query("UPDATE user SET avatar_path = ? WHERE uid = ?", ['images/avatars/' + uploadedFile.filename + '.png', req.session.uid], function(err, rows, fields){
+                    var newPath = 'images/avatars/' + uploadedFile.filename + '.png';
+                    connection.query("UPDATE user SET avatar_path = ? WHERE uid = ?", [newPath, req.session.uid], function(err, rows, fields){
                         if(err) throw err;
                         responseObject.status = "Success";
+                        responseObject.avatarPath = newPath;
+                        req.session.avatarPath = newPath;
                         res.send(responseObject);
                     });
                 });
