@@ -71,6 +71,19 @@ a {
 .navbarIcon{
   margin-right: 10px;
 }
+/*
+  Profile Styling
+*/
+@media only screen and (min-width: 768px) {
+  #profileAvatar{
+    max-height: 300px;
+    margin-bottom: 5px;
+  }
+  #profileAvatarButton{
+    margin-bottom: 5px;
+  }
+}
+
 
 /*
   Body Styling

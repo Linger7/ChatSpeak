@@ -5,6 +5,7 @@ var mysqlConnection = require('../utilities/mysqlConnection.js')
 var config = require('../config/config.js');
 var validator = require('validator');
 var xssFilters = require('xss-filters');
+var responseObject = require('../utilities/responseObject');
 
 //Authorize only signed in users
 var userAuth = function(req, res, next){
@@ -27,7 +28,7 @@ var guestAuth = function(req, res, next){
 /* GET Account Login/Register View */
 router.get('/', guestAuth, function(req, res, next) {
     res.render('registration/login', function(err, html) {
-        res.send(router.generateResponseObject('<i class="fa fa-user"></i>  Sign In or Register', html));
+        res.send(responseObject.generateResponseObject('<i class="fa fa-user"></i>  Sign In or Register', html));
     });
 });
 
@@ -40,28 +41,28 @@ router.post('/login', guestAuth, function(req, res, next){
     pool.getConnection(function(err, connection) {
         connection.query('SELECT password, uid, username, avatar_path FROM user WHERE username = ?', [userName],function(err, rows, fields){
             if(err){
-                router.sendError(res, 'Database issues, unable to login!');
+                responseObject.sendError(res, 'Database issues, unable to login!');
             } else {
-                var responseObject = {};
+                var customResponseObject = {};
                 if(rows.length != 0) {
                     var hashedPW = rows[0].password;
                     bcrypt.compare(password, hashedPW, function (err, result) {
                         if (result == true) {
-                            responseObject.status = 'Success';
-                            responseObject.avatarPath = rows[0].avatar_path;
-                            responseObject.username = xssFilters.inHTMLData(rows[0].username);
+                            customResponseObject.status = 'Success';
+                            customResponseObject.avatarPath = rows[0].avatar_path;
+                            customResponseObject.username = xssFilters.inHTMLData(rows[0].username);
                             req.session.auth = true;
                             req.session.uid = rows[0].uid;
                             req.session.username = rows[0].username;
 
                         } else {
-                            responseObject.status = 'Wrong Password';
+                            customResponseObject.status = 'Wrong Password';
                         }
-                        res.send(responseObject);
+                        res.send(customResponseObject);
                     });
                 } else {
-                    responseObject.status = 'Invalid User';
-                    res.send(responseObject);
+                    customResponseObject.status = 'Invalid User';
+                    res.send(customResponseObject);
                 }
             }
         });
@@ -71,7 +72,7 @@ router.post('/login', guestAuth, function(req, res, next){
 /* Display Account Registration Form */
 router.get('/register', guestAuth, function(req, res, next){
     res.render('registration/register', {params: {username: xssFilters.inHTMLData(req.query.username)}}, function(err, html){
-        res.send(router.generateResponseObject('<i class="fa fa-user-plus"></i> Register', html));
+        res.send(responseObject.generateResponseObject('<i class="fa fa-user-plus"></i> Register', html));
     });
 });
 
@@ -83,17 +84,17 @@ router.post('/register', guestAuth, function(req, res, next){
 
     //Throw a 404 to someone who bypassed clientside validation, temporarily, to do later
     if(userName === null || userName.length < 4 || userName.length > 25){
-        router.sendError(res, "Username must be between 4 and 25 characters long.");
+        res.send(responseObject.generateErrorObject("Username must be between 4 and 25 characters long."));
     } else if(email === null || email.length > 255 || email.length == 0 || !validator.isEmail(email)){
-        router.sendError(res, "Email must be a valid email including the @ character.");
+        res.send(responseObject.generateErrorObject("Email must be a valid email including the @ character."));
     } else if(password === null || password.length < 6 || password.length > 128){
-        router.sendError(res, "Password must be between 6 and 128 characters long.");
+        res.send(responseObject.generateErrorObject("Password must be between 6 and 128 characters long."));
     }
     bcrypt.genSalt(10, function(err, salt) {
         bcrypt.hash(password, salt, function(err, hash) {
             if(err){
                 console.log(err);
-                router.sendError(res, "Unable to encrypt password!");
+                res.send(responseObject.generateErrorObject("Unable to encrypt password!"));
             } else {
                 // Store Hash in password DB
                 var pool = mysqlConnection();
@@ -103,22 +104,22 @@ router.post('/register', guestAuth, function(req, res, next){
                             if (err.code === 'ER_DUP_ENTRY') {
                                 var errorMessage = String(err.message);
                                 if (errorMessage.indexOf(userName) > -1) {
-                                    router.sendError(res, 'The username ' + userName + ' is already taken!');
+                                    res.send(responseObject.generateErrorObject('The username ' + userName + ' is already taken!'));
                                 } else if (errorMessage.indexOf(email) > -1) {
-                                    router.sendError(res, 'The email address ' + email + ' is already taken!');
+                                    res.send(responseObject.generateErrorObject('The email address ' + email + ' is already taken!'));
                                 } else {
-                                    router.sendError(res, 'A database issue occurred! ' + err.message);
+                                    res.send(responseObject.generateErrorObject('A database issue occurred! ' + err.message));
                                 }
                             }
                         } else {
-                            var responseObject = {};
-                            responseObject.state = "Success";
-                            responseObject.title = "<i class='fa fa-thumbs-up'></i> Congratulations!";
-                            responseObject.avatarPath = config.defaults.avatarPath;
-                            responseObject.username = xssFilters.inHTMLData(userName);
+                            var customResponseObject = {};
+                            customResponseObject.state = "Success";
+                            customResponseObject.title = "<i class='fa fa-thumbs-up'></i> Congratulations!";
+                            customResponseObject.avatarPath = config.defaults.avatarPath;
+                            customResponseObject.username = xssFilters.inHTMLData(userName);
                             res.render('registration/success', {params: {username: xssFilters.inHTMLData(userName)}}, function (err, html) {
-                                responseObject.body = html;
-                                res.send(responseObject);
+                                customResponseObject.body = html;
+                                res.send(customResponseObject);
                             });
                         }
                     });
@@ -128,6 +129,7 @@ router.post('/register', guestAuth, function(req, res, next){
     });
 });
 
+//TODO
 router.get('/logout', userAuth, function(req, res, next){
     req.session.destroy(function(err){
         if(err){
@@ -138,21 +140,5 @@ router.get('/logout', userAuth, function(req, res, next){
         }
     });
 });
-
-router.sendError = function(res, message){
-    var responseObject = {};
-    responseObject.state = "Failed";
-    responseObject.message = message;
-    res.send(responseObject);
-};
-
-//Create JSON Object with the Modal Title and Body
-router.generateResponseObject = function(title, content){
-    var responseObject = {};
-    responseObject.title = title;
-    responseObject.body = content;
-
-    return responseObject;
-};
 
 module.exports = router;

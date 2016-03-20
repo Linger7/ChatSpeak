@@ -1,0 +1,11 @@
+div.row
+	div.col-xs-12.col-sm-6.col-md-3.center
+		img#profileAvatar.img-rounded.img-responsive.center-block(src='#{ params.avatar }')
+		button#profileAvatarButton.btn.btn-primary(type="file" onclick='ajaxModalCall("profile/avatar")') Change Avatar
+	div.col-xs-12.col-sm-6.col-md-9
+		p
+			| Username: #{params.username}
+			br
+			|	Email Address: #{params.email}
+			br
+			| Usergroup: #{params.usergroup}

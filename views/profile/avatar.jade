@@ -1,0 +1,59 @@
+div.alert.alert-danger#errorDisplay(role='alert', style='display: none')
+div.row.center
+	div.col-xs-6
+		h3 Current Avatar
+		img.img-rounded.img-responsive.center-block(src='#{ params.avatar }')
+	div.col-xs-6
+		h3 New Avatar
+		img.img-rounded.img-responsive.center-block#newAvatar
+div.row
+	div.col-xs-12
+		form.form-horizontal#avatarUploadForm(name='avatarUploadForm', action='#', enctype='multipart/form-dat', method='post', accept-charset='utf-8')
+			br
+			input#inputAvatarFile(type='file', name='inputAvatarFile', required='true')
+			br
+			button.btn.btn-success(type='submit' name='submit') Upload
+		script(type='text/javascript').
+			var files;
+
+			$('#inputAvatarFile').change(function(){
+				updatePreview(this);
+			});
+
+			function updatePreview(input){
+				if(input.files && input.files[0]){
+					files = input.files;
+					var reader = new FileReader();
+
+					reader.onload = function(e){
+						$('#newAvatar').attr('src', e.target.result);
+					}
+
+					reader.readAsDataURL(input.files[0]);
+				}
+			}
+			$('#avatarUploadForm').submit(function(event){
+				var formData = new FormData(this);
+
+				if(formData){
+					$.ajax({
+						url: "http://" + window.location.host + "/profile/avatar",
+						type: 'POST',
+						data: formData,
+						cache: false,
+						dataType: 'json',
+						processData: false,
+						contentType: false,
+					}).done(function (data) {
+						if(data.status === "Success"){
+							ajaxModalCall("profile");
+						} else {
+							ajaxModalCall("profile/avatar", data.message);
+						}
+					});
+					setModalToLoading();
+				}
+
+				event.preventDefault();
+				return false;
+			});

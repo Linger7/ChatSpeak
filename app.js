@@ -11,7 +11,6 @@ var config			= require('./config/config.js');
 var sessionStore = new MySQLStore(config.mysqlParams);
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 var accounts = require('./routes/accounts');
 var profiles = require('./routes/profile');
 var app = express();
@@ -35,10 +34,18 @@ app.use(session({
   saveUninitialized: true
 }));
 
+//Authorize only signed in users
+var userAuth = function(req, res, next){
+  if(req.session && req.session.auth){
+    return next();
+  } else {
+    res.sendStatus(401);
+  }
+};
+
 app.use('/', routes);
-app.use('/users', users);
 app.use('/accounts', accounts);
-app.use('/profile', profiles);
+app.use('/profile', userAuth, profiles);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

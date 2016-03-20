@@ -29,7 +29,7 @@ $(window).on("load", function() {
 });
 
 var tempUserName;
-function ajaxModalCall(path){
+function ajaxModalCall(path, errorMessage){
     $.ajax({
         url: mainURL + path,
         data: {username : $('#inputUserName').val()},
@@ -38,6 +38,9 @@ function ajaxModalCall(path){
         $('#mainModal').modal('show');
         $('#mainModalTitle').html(data.title);
         $('#mainModalBody').html(data.body);
+        if(errorMessage){
+            $('#errorDisplay').html(errorMessage).show();
+        }
     });
     setModalToLoading();
 
