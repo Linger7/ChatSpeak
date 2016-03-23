@@ -33,7 +33,7 @@ form.form-horizontal#loginForm
 	br
 	div.form-group
 		div.col-sm-offset-5.col-sm-7
-			button.btn.btn-primary.btn-lg(id='inputSignButton' onclick='ajaxModalCall("accounts/register")') Sign Up
+			button.btn.btn-primary.btn-lg(id='inputSignButton' onclick='ajaxModalCall("accounts/register", "username")') Sign Up
 	script(type='text/javascript').
 		function cs_userSignIn() {
 			var userName = $('#inputUserName').val();

@@ -51,7 +51,7 @@ div.row
 							ajaxModalCall("profile");
 						} else {
 							//Display Error
-							ajaxModalCall("profile/avatar", data.message);
+							ajaxModalCall("profile/avatar", null, data.message);
 						}
 					});
 					setModalToLoading();

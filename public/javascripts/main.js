@@ -27,10 +27,19 @@ $(document).ready(function(){
     });
 });
 
-function ajaxModalCall(path, errorMessage){
+function ajaxModalCall(path, inputData, errorMessage){
+    var data = null;
+
+    //TODO, redo
+    if(inputData !== null){
+        if(inputData === "username"){
+            data = {username : $('#inputUserName').val()};
+        }
+    }
+
     $.ajax({
         url: mainURL + path,
-        data: {username : $('#inputUserName').val()},
+        data: data,
         type: 'GET'
     }).done(function(data) {
         $('#mainModal').modal('show');
