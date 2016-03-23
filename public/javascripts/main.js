@@ -1,34 +1,32 @@
 var mainURL = "http://" + window.location.host + "/";
 $(document).ready(function(){
     loadNavBarDropDownMenu();
+
+    //Resize based on browser height
+    $(window).on("load", function() {
+        var viewPortHeight = $(window).height();
+        var navbarContainerHeight = $('#navbarContainer').height();
+        var adjustedHeight = viewPortHeight - navbarContainerHeight;
+
+        //Adjust Two Primary Rows
+        var firstRowHeight = adjustedHeight * 0.75;
+        var secondRowHeight = adjustedHeight * 0.25;
+
+        $('#firstRow').height(firstRowHeight);
+        $('#secondRow').height(secondRowHeight);
+
+        //Adjust Containers to be full height
+        $('#chatAreaContainer').height(firstRowHeight);
+        $('#chatAreaInputContainer').height(secondRowHeight);
+        $('#chatAreaExtraSpaceContainer').height(secondRowHeight);
+
+        //Adjust First Row, Second Column Height (Chat Participants and Chat Room List)
+        $('#chatAreaSecondContainer').height(firstRowHeight);
+        $('#chatAreaParticipantsContainer').height(firstRowHeight * 0.50);
+        $('#chatAreaRoomListContainer').height(firstRowHeight * 0.50);
+    });
 });
 
-//Resize based on browser height
-$(window).on("load", function() {
-    var viewPortHeight = $(window).height();
-    var navbarContainerHeight = $('#navbarContainer').height();
-    var adjustedHeight = viewPortHeight - navbarContainerHeight;
-
-    //Adjust Two Primary Rows
-    var firstRowHeight = adjustedHeight * 0.75;
-    var secondRowHeight = adjustedHeight * 0.25;
-
-    $('#firstRow').height(firstRowHeight);
-    $('#secondRow').height(secondRowHeight);
-
-    //Adjust Containers to be full height
-    $('#chatAreaContainer').height(firstRowHeight);
-    $('#chatAreaInputContainer').height(secondRowHeight);
-    $('#chatAreaExtraSpaceContainer').height(secondRowHeight);
-
-    //Adjust First Row, Second Column Height (Chat Participants and Chat Room List)
-    $('#chatAreaSecondContainer').height(firstRowHeight);
-    $('#chatAreaParticipantsContainer').height(firstRowHeight * 0.50);
-    $('#chatAreaRoomListContainer').height(firstRowHeight * 0.50);
-
-});
-
-var tempUserName;
 function ajaxModalCall(path, errorMessage){
     $.ajax({
         url: mainURL + path,
@@ -48,12 +46,14 @@ function ajaxModalCall(path, errorMessage){
     return false;
 }
 
+//Change Modal to Loading
 function setModalToLoading(){
     $('#mainModal').modal('show');
     $('#mainModalTitle').html('Loading...');
     $('#mainModalBody').html('<div class="center"><i class="fa fa-refresh fa-spin fa-5x"></i></div>');
 }
 
+//Logout call
 function callLogOut(){
     $.ajax({
         url: mainURL + "accounts/logout",
