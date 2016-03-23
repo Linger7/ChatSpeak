@@ -106,7 +106,7 @@ a {
   Used this instead of padding-top, so there is no need to offset the extra spaces in calculating element heights against viewport
 */
 .topOffset{
-  height: 5px;
+  height: 10px;
 }
 
 /* Small Devices, Tablets */
