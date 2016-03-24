@@ -8,6 +8,16 @@ socket.on('news', function (data) {
     socket.emit('my other event', { my: 'data' });
 });
 
+//Received an error message
+socket.on('socket_chatError', function(obj){
+    alert(obj.error);
+});
+
+//Received a message from the server
+socket.on('socket_chatMessage', function(obj){
+    appendToChat(obj.prefix + obj.bodyMessage + obj.suffix);
+});
+
 function socketIOReconnect(){
     console.log("socketIOReconnect()");
     if(socket) socket.io.disconnect();
@@ -28,21 +38,16 @@ $('#chatAreaChatSubmit').click(function(event){
 //Send Message
 function chatSendMessage(element){
     var message = element.val();
-    element.val('');//Clear input box
 
     if(message === null || message === ""){
         return;
     }
 
-    $.ajax({
-        url: mainURL + 'chat/send',
-        data: {message: message},
-        type: 'POST'
-    }).done(function(data) {
-        console.log(data);
-    });
-
+    socket.emit('socket_chatSendMessage', message);
+    element.val('');
 }
 
-//var chatArea = $('#chatArea');
-//chatArea.append(createMessage(message));
+function appendToChat(message){
+    var chatArea = $('#chatArea');
+    chatArea.append(message);
+}

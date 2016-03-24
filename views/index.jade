@@ -17,7 +17,7 @@ block content
       div.col-xs-12.col-sm-8#chatAreaInputContainer
         h3 Enter a Message
         div.input-group
-          input.form-control#chatAreaChatBox(type='text', placeholder='Enter your message')
+          input.form-control#chatAreaChatBox(type='text', placeholder='Enter your message' maxlength='#{maxMessageLength}')
           span.input-group-btn
             button.btn.btn-default#chatAreaChatSubmit(type='button') Send
       div.col-xs-12.col-sm-4#chatAreaExtraSpaceContainer
