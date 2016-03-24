@@ -67,6 +67,7 @@ form.form-horizontal#loginForm
 
 					if (status === "Success") {
 						$('#mainModal').modal('hide');
+						socketIOReconnect();
 						updateNavBar(data.username, data.avatarPath);
 					} else if (status === "Wrong Password") {
 						//TODO update here

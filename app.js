@@ -4,16 +4,20 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var mysql = require('mysql');
+var config = require('./config/config.js');
+
 var session = require('express-session');
+var mysql = require('mysql');
 var MySQLStore = require('express-mysql-session')(session);
-var config			= require('./config/config.js');
 var sessionStore = new MySQLStore(config.mysqlParams);
 
 var routes = require('./routes/index');
 var accounts = require('./routes/accounts');
 var profiles = require('./routes/profile');
+
 var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io').listen(server);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -25,14 +29,21 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({
-  secret: "ikXbeBMa5zDlZFKRx021P5bqn",
-  name: "chatspeak.sid",
-  store: sessionStore,
-  proxy: true,
-  resave: true,
-  saveUninitialized: true
-}));
+session = session({
+    secret: "ikXbeBMa5zDlZFKRx021P5bqn",
+    name: "chatspeak.sid",
+    store: sessionStore,
+    proxy: true,
+    resave: true,
+    saveUninitialized: true
+});
+
+app.use(session);
+
+var sharedSession = require("express-socket.io-session");
+io.use(sharedSession(session));
+var chat = require('./routes/chat')(io);
+server.listen(80);
 
 //Authorize only signed in users
 var userAuth = function(req, res, next){
