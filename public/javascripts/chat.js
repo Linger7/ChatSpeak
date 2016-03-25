@@ -26,12 +26,13 @@ socket.on('socket_chatLoadChatRoomMessages', function(obj){
     }
 });
 
-
+//Reconnect socket
 function socketIOReconnect(){
     console.log("socketIOReconnect()");
     if(socket) socket.io.disconnect();
     socket = io.connect('http://localhost');
 }
+
 //Chat Box Enter Pressed
 $('#chatAreaChatBox').keydown(function(event){
     if(event.keyCode == 13){
@@ -56,6 +57,7 @@ function chatSendMessage(element){
     element.val('');
 }
 
+//Append to the chatbox
 function appendToChat(message){
     var chatArea = $('#chatArea');
     chatArea.append(message);

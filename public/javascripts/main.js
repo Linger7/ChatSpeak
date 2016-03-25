@@ -107,3 +107,34 @@ function updateNavBar(username, avatarPath){
 
     loadNavBarDropDownMenu();
 }
+
+var selectedText = "";
+var selectedStart = 0;
+var selectedEnd = 0;
+
+//Create a BB Tag
+$('.bbButton').click(function(){
+    var id = $(this).attr('type');
+    var textInput = $('#chatAreaChatBox');
+    var currentText = textInput.val();
+
+    //If text is within the chatarea was selected, add the tags around the selected text
+    if(selectedText !== ""){
+        var beforeText = currentText.substring(0, selectedStart);
+        var afterText = currentText.substring(selectedEnd);
+
+        textInput.val(beforeText + '[' + id + ']' + selectedText + '[/' + id + ']' + afterText);
+    } else {
+        textInput.val(currentText + '[' + id +'][/' + id + ']');
+    }
+
+    selectedText = "";
+});
+
+
+//Store user selection in chatarea input
+$('#chatAreaChatBox').mouseup(function(){
+    selectedText = this.value.substring(this.selectionStart, this.selectionEnd);
+    selectedStart = this.selectionStart;
+    selectedEnd = this.selectionEnd;
+});

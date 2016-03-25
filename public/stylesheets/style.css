@@ -129,3 +129,10 @@ a {
     width: 50%;
   }
 }
+
+/*
+  BB Code Row
+*/
+#bbCodeRow{
+  margin-bottom: 3px;
+}

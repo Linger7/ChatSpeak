@@ -1,0 +1,13 @@
+h3 Enter a Message
+div.row#bbCodeRow
+	div.col-xs-12
+		button.btn.btn-default.bbButton(type='b') Bold
+		button.btn.btn-default.bbButton(type='u') Underline
+		button.btn.btn-default.bbButton(type='i') Italics
+		button.btn.btn-default.bbButton(type='img') Image
+		button.btn.btn-default.bbButton(type='url') Link
+		button.btn.btn-default.bbButton(type='code') Code
+div.input-group
+	input.form-control#chatAreaChatBox(type='text', placeholder='Enter your message' maxlength='#{maxMessageLength}')
+	span.input-group-btn
+		button.btn.btn-success#chatAreaChatSubmit(type='button') Send
