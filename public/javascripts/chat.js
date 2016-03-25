@@ -18,6 +18,15 @@ socket.on('socket_chatMessage', function(obj){
     appendToChat(obj.prefix + obj.bodyMessage + obj.suffix);
 });
 
+//Received chat room message history from server
+socket.on('socket_chatLoadChatRoomMessages', function(obj){
+    console.log(obj);
+    for(index in obj){
+        appendToChat(obj[index].username + ": " + obj[index].message + "<br />");
+    }
+});
+
+
 function socketIOReconnect(){
     console.log("socketIOReconnect()");
     if(socket) socket.io.disconnect();

@@ -2,7 +2,7 @@
  * ChatSpeak JavaScript File
  * https://github.com/Linger7/ChatSpeak
  */
-var mysqlConnection = require('../utilities/mysqlConnection.js')
+var mysqlConnection = require('../utilities/mysqlConnection.js');
 var pool = mysqlConnection();
 var config = require('../config/config.js');
 var exports = {};
