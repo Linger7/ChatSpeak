@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt');
-var mysqlConnection = require('../utilities/mysqlConnection.js')
 var config = require('../config/config.js');
 var validator = require('validator');
 var xssFilters = require('xss-filters');
 var responseObject = require('../utilities/responseObject');
+var user = require('../model/user');
 
 //Authorize only signed in users
 var userAuth = function(req, res, next){
@@ -33,40 +33,36 @@ router.get('/', guestAuth, function(req, res, next) {
 });
 
 /* Account Login with username and password */
-router.post('/login', guestAuth, function(req, res, next){
+router.post('/login', guestAuth, function (req, res, next) {
     var userName = req.body.inputUserName;
     var password = req.body.inputPassword;
 
-    var pool = mysqlConnection();
-    pool.getConnection(function(err, connection) {
-        connection.query('SELECT password, uid, username, avatar_path FROM user WHERE username = ?', [userName],function(err, rows, fields){
-            if(err){
-                responseObject.sendError(res, 'Database issues, unable to login!');
-            } else {
-                var customResponseObject = {};
-                if(rows.length != 0) {
-                    var hashedPW = rows[0].password;
-                    bcrypt.compare(password, hashedPW, function (err, result) {
-                        if (result == true) {
-                            customResponseObject.status = 'Success';
-                            customResponseObject.avatarPath = rows[0].avatar_path;
-                            customResponseObject.username = xssFilters.inHTMLData(rows[0].username);
-                            req.session.auth = true;
-                            req.session.uid = rows[0].uid;
-                            req.session.username = rows[0].username;
-                            req.session.avatarPath = rows[0].avatar_path;
-
-                        } else {
-                            customResponseObject.status = 'Wrong Password';
-                        }
-                        res.send(customResponseObject);
-                    });
+    user.getLoginInformation(userName, function (err, data) {
+        var customResponseObject = {};
+        if (err) {
+            customResponseObject.status = err;
+            res.send(customResponseObject);
+        } else {
+            var hashedPW = data.password;
+            bcrypt.compare(password, hashedPW, function (err, result) {
+                if (err) {
+                    customResponseObject.status = "Unable to validate password, please check again later!";
                 } else {
-                    customResponseObject.status = 'Invalid User';
-                    res.send(customResponseObject);
+                    if (result) {
+                        customResponseObject.status = 'Success';
+                        customResponseObject.avatarPath = data.avatarPath;
+                        customResponseObject.username = xssFilters.inHTMLData(data.username);
+                        req.session.auth = true;
+                        req.session.uid = data.uid;
+                        req.session.username = data.username;
+                        req.session.avatarPath = data.avatarPath;
+                    } else {
+                        customResponseObject.status = 'Wrong Password';
+                    }
                 }
-            }
-        });
+                res.send(customResponseObject);
+            });
+        }
     });
 });
 
@@ -97,33 +93,15 @@ router.post('/register', guestAuth, function(req, res, next){
                 console.log(err);
                 res.send(responseObject.generateErrorObject("Unable to encrypt password!"));
             } else {
-                // Store Hash in password DB
-                var pool = mysqlConnection();
-                pool.getConnection(function (err, connection) {
-                    connection.query('INSERT INTO user (username, password, email, usergroup_uid, ip_address, avatar_path) VALUES (?, ?, ?, ?, ?, ?)', [userName, hash, email, config.defaults.usergroup, req.connection.remoteAddress, config.defaults.avatarPath], function (err, rows, fields) {
-                        if (err) {
-                            if (err.code === 'ER_DUP_ENTRY') {
-                                var errorMessage = String(err.message);
-                                if (errorMessage.indexOf(userName) > -1) {
-                                    res.send(responseObject.generateErrorObject('The username ' + userName + ' is already taken!'));
-                                } else if (errorMessage.indexOf(email) > -1) {
-                                    res.send(responseObject.generateErrorObject('The email address ' + email + ' is already taken!'));
-                                } else {
-                                    res.send(responseObject.generateErrorObject('A database issue occurred! ' + err.message));
-                                }
-                            }
-                        } else {
-                            var customResponseObject = {};
-                            customResponseObject.state = "Success";
-                            customResponseObject.title = "<i class='fa fa-thumbs-up'></i> Congratulations!";
-                            customResponseObject.avatarPath = config.defaults.avatarPath;
-                            customResponseObject.username = xssFilters.inHTMLData(userName);
-                            res.render('registration/success', {params: {username: xssFilters.inHTMLData(userName)}}, function (err, html) {
-                                customResponseObject.body = html;
-                                res.send(customResponseObject);
-                            });
-                        }
-                    });
+                user.createUser(userName, hash, email, req.connection.remoteAddress, function(err, data){
+                    if(err){
+                        res.send(responseObject.generateErrorObject(err));
+                    } else {
+                        res.render('registration/success', {params: {username: xssFilters.inHTMLData(data.username)}}, function (err, html) {
+                            data.body = html;
+                            res.send(data);
+                        });
+                    }
                 });
             }
         });

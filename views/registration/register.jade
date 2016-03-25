@@ -74,7 +74,10 @@ form.form-horizontal#registrationForm
 							$('#mainModalTitle').html(data.title);
 							$('#mainModalBody').html(data.body);
 
-							updateNavBar(data.username, data.avatarPath);
+							//TODO, redo this
+							setTimeout(function(){
+								updateNavBar(data.username, data.avatarPath);
+							}, 3000);
 						}
 				});
 			}

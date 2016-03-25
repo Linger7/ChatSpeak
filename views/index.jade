@@ -6,7 +6,7 @@ block content
       div.col-xs-12.col-sm-8#chatAreaContainer
         div.topOffset
         div.well#chatArea
-      div.col-xs-12.col-sm-4#chatAreaSecondContainer
+      div.hidden-xs.col-sm-4#chatAreaSecondContainer
         div.topOffset
         div.row
           div.col-xs-12#chatAreaParticipantsContainer
@@ -22,7 +22,7 @@ block content
             button.btn.btn-default#chatAreaChatSubmit(type='button') Send
       div.col-xs-12.col-sm-4#chatAreaExtraSpaceContainer
         p Extra Space
-  div.modal.fade#mainModal(tabindex='-1', role='dialog', area-labelledby='myModalLebel', area-hidden='true')
+  div.modal.fade#mainModal(tabindex='-1', role='dialog', area-labelledby='myModalLabel', area-hidden='true')
     div.modal-dialog.modal-large
       div.modal-content#mainModalContent
         div.modal-header
