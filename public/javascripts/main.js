@@ -138,3 +138,10 @@ $('#chatAreaChatBox').mouseup(function(){
     selectedStart = this.selectionStart;
     selectedEnd = this.selectionEnd;
 });
+
+//Update the time on chat box messages to be a new relative message every 30 seconds
+setInterval( function(){
+    $('.chatTimeText').each(function(index, obj){
+        obj.innerHTML = moment($(this).attr('time')).fromNow() + " - ";
+    });
+}, 30000);

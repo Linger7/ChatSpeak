@@ -47,18 +47,15 @@ module.exports = function (io) {
             }
 
             var bodyMessage = sanitizedObject.message;
-            var prefixMessage = getPrefixMessage(socket);
-            var suffixMessage = "<br />";
-
-            commitMessage(message, socket, function (err) {
+            commitMessage(message, socket, function (err, data) {
                 if (err) {
                     socket.emit('socket_chatError', {error: err});
                 } else {
-                    io.emit('socket_chatMessage',
-                        {
+                    io.emit('socket_chatMessage', {
+                            date_created : data,
                             bodyMessage: bodyMessage,
-                            prefix: prefixMessage,
-                            suffix: suffixMessage
+                            avatar: socket.handshake.session.avatarPath,
+                            username:  socket.handshake.session.username,
                         });
                 }
             });
@@ -83,12 +80,6 @@ function sanitizeMessage(message) {
     return sanitizedObject;
 }
 
-//Get the prefix before a message
-//Prefix: Username followed by colon
-function getPrefixMessage(socket) {
-    return socket.handshake.session.username + ": ";
-}
-
 //Store the raw message into the database
 function commitMessage(message, socket, callback) {
     //TODO get chatroom id
@@ -96,7 +87,7 @@ function commitMessage(message, socket, callback) {
         if (err) {
             return callback(err);
         } else {
-            return callback(null);
+            return callback(null, new Date());
         }
     });
 }

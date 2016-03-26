@@ -89,16 +89,10 @@ a {
 /*
   Body Styling
 */
-#chatArea{
-  height: 100%;
-  overflow: auto;
-}
-
-
 #mainContainer{
   height: 100%;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
+  border-left: 1px solid #c7c7c7;
+  border-right: 1px solid #c7c7c7;
 }
 
 /*
@@ -128,6 +122,32 @@ a {
   .modal-dialog.modal-large {
     width: 50%;
   }
+}
+
+/*
+  ChatBox
+*/
+#chatArea{
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  overflow-y: scroll;
+  border-radius: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: #F5F5F5;
+}
+
+
+/*Time before username and message*/
+.chatTimeText{
+  font-size: 10px;
+}
+
+.chatAvatar{
+  height: 14px;
+  width: 14px;
+  border-radius: 2px;
 }
 
 /*

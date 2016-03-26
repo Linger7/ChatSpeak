@@ -15,15 +15,16 @@ socket.on('socket_chatError', function(obj){
 
 //Received a message from the server
 socket.on('socket_chatMessage', function(obj){
-    appendToChat(obj.prefix + obj.bodyMessage + obj.suffix);
+    appendToChat(obj.avatar, obj.date_created, obj.username, obj.bodyMessage);
+    scrollToBottomOfChat();
 });
 
 //Received chat room message history from server
 socket.on('socket_chatLoadChatRoomMessages', function(obj){
-    console.log(obj);
     for(index in obj){
-        appendToChat(obj[index].username + ": " + obj[index].message + "<br />");
+        appendToChat(obj[index].avatar, obj[index].date_created, obj[index].username, obj[index].message);
     }
+    scrollToBottomOfChat();
 });
 
 //Reconnect socket
@@ -58,7 +59,30 @@ function chatSendMessage(element){
 }
 
 //Append to the chatbox
-function appendToChat(message){
+function appendToChat(avatar, time, username, body){
     var chatArea = $('#chatArea');
-    chatArea.append(message);
+    chatArea.append(
+        "<img src='" + avatar + "' class='chatAvatar'/> " +
+        "<small class='chatTimeText' time='" + time + "'>" + moment(time).fromNow() + " - </small> " +
+        username + ": " +
+        body +
+        "<br />"
+    );
 }
+
+
+//From: http://stackoverflow.com/questions/3742346/use-jquery-to-scroll-to-the-bottom-of-a-div-with-lots-of-text
+var height = 0;
+function scrollToBottomOfChat(){
+    var wtf = $('#chatArea');
+
+    height = height < wtf[0].scrollHeight ? wtf[0].scrollHeight : 0;
+    scroll.call(wtf, height, this);
+}
+
+function scroll(height, ele) {
+    this.stop().animate({ scrollTop: height }, 1000, function () {
+        var dir = height ? "top" : "bottom";
+        $(ele).html("scroll to "+ dir).attr({ id: dir });
+    });
+};
