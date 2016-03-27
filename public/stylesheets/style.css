@@ -108,13 +108,6 @@ a {
 }
 
 /*
-  Offset the first row's bottom margin due to the top offset
-*/
-#firstRow{
-  margin-bottom: 15px;
-}
-
-/*
   ChatBox
 */
 #chatArea{
@@ -187,6 +180,7 @@ a {
   BB Code Row
 */
 #bbCodeRow{
+  padding-top: 15px;
   margin-bottom: 3px;
 }
 
