@@ -12,12 +12,12 @@ block content
           div.col-xs-12#chatAreaParticipantsContainer
             p Chat Participants
           div.col-xs-12#chatAreaRoomListContainer
-            p Chat Room List
+            include chat/chatroomlist
     div.row#secondRow
       div.col-xs-12.col-sm-8#chatAreaInputContainer
         include chat/chatarea
-      div.col-xs-12.col-sm-4#chatAreaExtraSpaceContainer
-        p Extra Space
+      div.col-xs-12.col-sm-4#chatAreaCurrentRoomInfoContainer
+        include chat/chatroominfo
   div.modal.fade#mainModal(tabindex='-1', role='dialog', area-labelledby='myModalLabel', area-hidden='true')
     div.modal-dialog.modal-large
       div.modal-content#mainModalContent

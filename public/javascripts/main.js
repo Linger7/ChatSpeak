@@ -18,7 +18,7 @@ $(document).ready(function(){
         //Adjust Containers to be full height
         $('#chatAreaContainer').height(firstRowHeight);
         $('#chatAreaInputContainer').height(secondRowHeight);
-        $('#chatAreaExtraSpaceContainer').height(secondRowHeight);
+        $('#chatAreaCurrentRoomInfoContainer').height(secondRowHeight);
 
         //Adjust First Row, Second Column Height (Chat Participants and Chat Room List)
         $('#chatAreaSecondContainer').height(firstRowHeight);

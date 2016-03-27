@@ -12,22 +12,24 @@ var parser = new BBCodeParser(BBCodeParser.defaultTags());
 module.exports = function (io) {
 
     io.on('connection', function (socket) {
-        console.log('User Connected');
+        console.log('A User Connected');
         console.log(socket.handshake.session);
 
-        //Load previous messages for this chat room
-        getChatRoomMessages(2, function (err, data) {
-            if (err) {
-                socket.emit('socket_chatError', {error: err});
+        //Join the default lobby chat room
+        joinChatRoom(config.defaults.defaultChatRoom, socket);
+
+        //Get all the chat rooms
+        getChatRooms(function(err, data){
+            if(err){
+                socket.emit('socket_chatError', {error : err});
             } else {
-                if (data.length != 0) {
-                    socket.emit('socket_chatLoadChatRoomMessages', data);
-                }
+                //Send all the chat rooms
+                socket.emit('socket_chatLoadAllChatRooms', data);
             }
         });
 
         socket.on('disconnect', function () {
-            console.log('User disconnected');
+            console.log('User Disconnected');
         });
 
         //Chat Message was sent to server
@@ -51,7 +53,8 @@ module.exports = function (io) {
                 if (err) {
                     socket.emit('socket_chatError', {error: err});
                 } else {
-                    io.emit('socket_chatMessage', {
+                    //console.log("Sending message to chatroom: " + socket.handshake.session.chatroom);
+                    io.in(socket.handshake.session.chatroom).emit('socket_chatMessage', {
                             date_created : data,
                             bodyMessage: bodyMessage,
                             avatar: socket.handshake.session.avatarPath,
@@ -61,7 +64,9 @@ module.exports = function (io) {
             });
         });
 
-        //socket.on
+        socket.on('socket_chatAttemptToJoinRoom', function(obj){
+            joinChatRoom(obj.chatroomID, socket);
+        });
     });
 }
 
@@ -82,12 +87,69 @@ function sanitizeMessage(message) {
 
 //Store the raw message into the database
 function commitMessage(message, socket, callback) {
-    //TODO get chatroom id
-    chatMessage.createMessage(message, socket.handshake.session.uid, 2, function (err) {
+    chatMessage.createMessage(message, socket.handshake.session.uid, socket.handshake.session.chatroom, function (err) {
         if (err) {
             return callback(err);
         } else {
             return callback(null, new Date());
+        }
+    });
+}
+
+//Join a chat room
+function joinChatRoom(chatroomID, socket){
+    chatRoom.getChatRoomInfo(chatroomID, function(err, data){
+        if(err){
+            return callback(err);
+        } else {
+            if(data.length == 0){
+                socket.emit('socket_chatError', {error: err});
+            } else {
+                //Leave the previous chat room, if it exists
+                if(socket.handshake.session.chatroom){
+                    socket.leave(socket.handshake.session.chatroom);
+                }
+
+                //Update this user's current room
+                socket.handshake.session.chatroom = chatroomID;
+                socket.join(chatroomID);
+
+                var data = data[0];
+                data.name = xssFilters.inHTMLData(data.name);
+                data.description = xssFilters.inHTMLData(data.description);
+                data.owner = xssFilters.inHTMLData(data.username);
+
+                //Send chat room info
+                socket.emit('socket_chatLoadChatRoomInfo', data);
+
+                //Load chat room messages
+                getChatRoomMessages(chatroomID, function (err, data) {
+                    if (err) {
+                        socket.emit('socket_chatError', {error: err});
+                    } else {
+                        socket.emit('socket_chatLoadChatRoomMessages', data);
+                    }
+                });
+            }
+        }
+    });
+}
+
+//Get all the chat rooms
+function getChatRooms(callback){
+    chatRoom.getChatRooms(function(err, data){
+        if(err){
+            return callback(err);
+        } else {
+            //Sanitize the chat room names
+            for(index in data){
+                data[index].name = xssFilters.inHTMLData(data[index].name);
+                if(data[index].password && data[index].password !== ""){
+                    data[index].password = true;
+                }
+            }
+
+            callback(null, data);
         }
     });
 }

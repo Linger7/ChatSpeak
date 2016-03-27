@@ -21,6 +21,10 @@ a {
   text-align: center;
 }
 
+.floatRight{
+  float: right;
+}
+
 /* == Navigation Bar Styling == */
 .navbar-default {
   background-color: #2c82c9;
@@ -103,6 +107,95 @@ a {
   height: 10px;
 }
 
+/*
+  Offset the first row's bottom margin due to the top offset
+*/
+#firstRow{
+  margin-bottom: 15px;
+}
+
+/*
+  ChatBox
+*/
+#chatArea{
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  border-radius: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: #F5F5F5;
+}
+
+/*
+  ChatRooms container
+*/
+#chatAreaRoomListContainer{
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+/*
+  Heading for Chat Room List
+*/
+#ChatRoomsHeading{
+  margin-top: 5px;
+}
+
+/*
+  ChatRoom Row
+*/
+.chatRoomRow{
+  /*border: solid black 1px;*/
+  color: #333;
+  padding: 8px;
+  vertical-align: top;
+  border-top: 1px solid #ddd;
+}
+
+.chatRoomRow:nth-child(even){
+  background: #F9F9F9;
+}
+
+.chatRoomRow:nth-child(odd){
+  background: #FFFFFF;
+}
+
+.chatRoomRow:hover{
+  background: #44BBFF;
+  font-weight: 900;
+}
+
+
+/*Time before username and message*/
+.chatTimeText{
+  font-size: 10px;
+}
+
+.chatUserNameLink{
+
+}
+
+.chatAvatar{
+  height: 14px;
+  width: 14px;
+  border-radius: 2px;
+}
+
+/*
+  BB Code Row
+*/
+#bbCodeRow{
+  margin-bottom: 3px;
+}
+
+
+
+
+/*
+  Modal Styling
+*/
 /* Small Devices, Tablets */
 @media only screen and (min-width: 768px) {
   /*Change Modal Width*/
@@ -122,37 +215,4 @@ a {
   .modal-dialog.modal-large {
     width: 50%;
   }
-}
-
-/*
-  ChatBox
-*/
-#chatArea{
-  height: 100%;
-  width: 100%;
-  overflow: auto;
-  overflow-y: scroll;
-  border-radius: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  background-color: #F5F5F5;
-}
-
-
-/*Time before username and message*/
-.chatTimeText{
-  font-size: 10px;
-}
-
-.chatAvatar{
-  height: 14px;
-  width: 14px;
-  border-radius: 2px;
-}
-
-/*
-  BB Code Row
-*/
-#bbCodeRow{
-  margin-bottom: 3px;
 }

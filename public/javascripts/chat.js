@@ -3,10 +3,6 @@
  * https://github.com/Linger7/ChatSpeak
  */
 var socket = io.connect('http://localhost');
-socket.on('news', function (data) {
-    console.log(data);
-    socket.emit('my other event', { my: 'data' });
-});
 
 //Received an error message
 socket.on('socket_chatError', function(obj){
@@ -19,8 +15,38 @@ socket.on('socket_chatMessage', function(obj){
     scrollToBottomOfChat();
 });
 
+//Load a specific chat room's descriptive information
+socket.on('socket_chatLoadChatRoomInfo', function(obj){
+    $('#chatAreaChatRoomName').html(obj.name);
+    $('#chatAreaDescription').html(obj.description);
+    $('#chatAreaOwner').html(obj.owner);
+});
+
+//Load all chat rooms
+socket.on('socket_chatLoadAllChatRooms', function(obj){
+    //Clear previous chat rooms (should never be any)
+    var chatRoomsContainer = $('#ChatRoomsContainer');
+    chatRoomsContainer.html("");
+
+    var passwordText;
+    var hasPassword;
+    for(index in obj){
+        if(obj[index].password){
+            hasPassword = true;
+            passwordText = '<i class="fa fa-lock"></i>';
+        } else {
+            hasPassword = false;
+            passwordText = '';
+        }
+        chatRoomsContainer.append('<div class="chatRoomRow" hasPassword="' + hasPassword + '" chatroomID="' + obj[index].chatroomID + '" onclick="attemptToJoinChatRoom(this)">' + obj[index].name + '<span class="floatRight">' + passwordText + '</span></div>');
+    }
+});
+
 //Received chat room message history from server
 socket.on('socket_chatLoadChatRoomMessages', function(obj){
+    //Clear previous messages
+    $('#chatArea').html("");
+
     for(index in obj){
         appendToChat(obj[index].avatar, obj[index].date_created, obj[index].username, obj[index].message);
     }
@@ -64,7 +90,7 @@ function appendToChat(avatar, time, username, body){
     chatArea.append(
         "<img src='" + avatar + "' class='chatAvatar'/> " +
         "<small class='chatTimeText' time='" + time + "'>" + moment(time).fromNow() + " - </small> " +
-        username + ": " +
+        "<a href='#' class='chatUserNameLink'>" + username + "</a>: " +
         body +
         "<br />"
     );
@@ -86,3 +112,16 @@ function scroll(height, ele) {
         $(ele).html("scroll to "+ dir).attr({ id: dir });
     });
 };
+
+function attemptToJoinChatRoom(obj){
+    var currentObj = $(obj);
+    var chatroomID = currentObj.attr('chatroomID');
+    var hasPassword = currentObj.attr('hasPassword');
+
+    //Display Password Modal and pass the password to socket
+    var dataToSend = {};
+    dataToSend.chatroomID = chatroomID;
+    dataToSend.password = "TODO";
+
+    socket.emit('socket_chatAttemptToJoinRoom', dataToSend);
+}

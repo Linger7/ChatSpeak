@@ -11,6 +11,7 @@ var exports = {};
 exports.getUserInfo = function(userID, callback){
     pool.getConnection(function(err, connection) {
         connection.query('SELECT uid, username, email, avatar_path, usergroup_uid, date_created FROM USER WHERE uid = ?', [userID], function (err, rows, fields) {
+            connection.destroy();
             if (err) {
                 console.log(err);
                 return callback(err, null);
@@ -29,6 +30,7 @@ exports.getUserInfo = function(userID, callback){
 exports.updateUserAvatar = function(userID, filePath, callback){
     pool.getConnection(function(err, connection){
         connection.query("UPDATE user SET avatar_path = ? WHERE uid = ?", [filePath, userID], function(err, rows, fields){
+            connection.destroy();
             if(err){
                 console.log(err);
                 return callback(err, null);
@@ -43,6 +45,7 @@ exports.updateUserAvatar = function(userID, filePath, callback){
 exports.getLoginInformation = function(username, callback){
     pool.getConnection(function(err, connection) {
         connection.query('SELECT password, uid, username, avatar_path FROM user WHERE username = ?', [username],function(err, rows, fields){
+            connection.destroy();
             if(err){
                 console.log(err);
                 return callback("Currently experiencing database issues, please try again later!", null);
@@ -66,6 +69,7 @@ exports.getLoginInformation = function(username, callback){
 exports.createUser = function(username, hashedPW, email, ipAddress, callback){
     pool.getConnection(function (err, connection) {
         connection.query('INSERT INTO user (username, password, email, usergroup_uid, ip_address, avatar_path) VALUES (?, ?, ?, ?, ?, ?)', [username, hashedPW, email, config.defaults.usergroup, ipAddress, config.defaults.avatarPath], function (err, rows, fields) {
+            connection.destroy();
             if (err) {
                 if (err.code === 'ER_DUP_ENTRY') {
                     var errorMessage = String(err.message);
