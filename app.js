@@ -15,7 +15,7 @@ var sessionStore = new MySQLStore(config.mysqlParams);
 var routes = require('./routes/index');
 var accounts = require('./routes/accounts');
 var profiles = require('./routes/profile');
-var chatRoute = require('./routes/chatRoute');
+var chats = require('./routes/chat').router;
 
 var app = express();
 var server = require('http').Server(app);
@@ -61,7 +61,7 @@ var userAuth = function(req, res, next){
 app.use('/', routes);
 app.use('/accounts', accounts);
 app.use('/profile', userAuth, profiles);
-app.use('/chat', userAuth, chatRoute);
+app.use('/chat', userAuth, chats);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -52,8 +52,6 @@ socket.on('socket_chatLoadChatRoomMessages', function(obj){
 
     //Set this chat room row to be active
     $('#' + obj.currentRoom).addClass('chatRoomActiveRow');
-    console.log(obj.currentRoom);
-    console.log(obj);
 
     var messages = obj.messages;
     for(index in messages){
