@@ -145,3 +145,15 @@ setInterval( function(){
         obj.innerHTML = moment($(this).attr('time')).fromNow() + " - ";
     });
 }, 30000);
+
+
+function showErrors(errors){
+    var errorDisplay = $('#errorDisplay');
+    errorDisplay.html('');
+    errorDisplay.show();
+    errorDisplay.append('<ul>');
+    for (index in errors) {
+        errorDisplay.append('<li>' + errors[index] + '</li>');
+    }
+    errorDisplay.append('</ul>');
+};

@@ -38,7 +38,7 @@ socket.on('socket_chatLoadAllChatRooms', function(obj){
             hasPassword = false;
             passwordText = '';
         }
-        chatRoomsContainer.append('<div class="chatRoomRow" hasPassword="' + hasPassword + '" chatroomID="' + obj[index].chatroomID + '" onclick="attemptToJoinChatRoom(this)">' + obj[index].name + '<span class="floatRight">' + passwordText + '</span></div>');
+        chatRoomsContainer.append('<div class="chatRoomRow" hasPassword="' + hasPassword + '" id="' + obj[index].chatroomID + '" chatroomID="' + obj[index].chatroomID + '" onclick="attemptToJoinChatRoom(this)">' + obj[index].name + '<span class="floatRight onTop">' + passwordText + '</span></div>');
     }
 });
 
@@ -47,8 +47,17 @@ socket.on('socket_chatLoadChatRoomMessages', function(obj){
     //Clear previous messages
     $('#chatArea').html("");
 
-    for(index in obj){
-        appendToChat(obj[index].avatar, obj[index].date_created, obj[index].username, obj[index].message);
+    //Remove previous active chat room
+    $('.chatRoomActiveRow').removeClass('chatRoomActiveRow');
+
+    //Set this chat room row to be active
+    $('#' + obj.currentRoom).addClass('chatRoomActiveRow');
+    console.log(obj.currentRoom);
+    console.log(obj);
+
+    var messages = obj.messages;
+    for(index in messages){
+        appendToChat(messages[index].avatar, messages[index].date_created, messages[index].username, messages[index].message);
     }
     scrollToBottomOfChat();
 });
@@ -124,4 +133,59 @@ function attemptToJoinChatRoom(obj){
     dataToSend.password = "TODO";
 
     socket.emit('socket_chatAttemptToJoinRoom', dataToSend);
+}
+
+//Call Modal to Create New Chat Room
+function callCreateNewChatRoom(){
+    ajaxModalCall('chat/create/room');
+}
+
+//Create actual chat room
+function createNewChatRoom(){
+    var chatName = $('#inputChatRoomName').val();
+    var chatPassword = $('#inputChatPassword').val();
+    var chatPasswordConfirm = $('#inputConfirmPassword').val();
+    var chatDescription = $('#inputDescription').val();
+    var formData = $('#createRoomForm').serialize();
+
+    //Do clientside validation
+    var errors = [];
+    if(chatName === null || chatName === ""){
+        errors.push("You must enter a name for your chat room!");
+    }
+
+    if(chatName.length > 100){
+        errors.push("Your chat room name must be under 100 characters, currently: " + chatName.length);
+    }
+
+    if(chatPassword !== chatPasswordConfirm){
+        errors.push("Your passwords do not match!");
+    }
+
+    if(chatDescription.length > 5000){
+        errors.push("Your room description must be under 5000 characters, currently: " + chatDescription.length);
+    }
+
+    if(errors.length > 0){
+        showErrors(errors);
+    } else {
+        //Submit Registration Form
+        $.ajax({
+            url: "http://" + window.location.host + "/chat/create/room",
+            type: 'POST',
+            data: formData
+        }).done(function (data) {
+            if(data.state === "Failed"){
+                errors.push(data.message);
+                showErrors(errors);
+            } else {
+                $('#mainModal').modal('show');
+                $('#mainModalTitle').html(data.title);
+                $('#mainModalBody').html(data.body);
+            }
+        });
+    }
+
+    event.preventDefault();
+    return false;
 }

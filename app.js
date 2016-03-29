@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var config = require('./config/config.js');
+var responseObject = require('./utilities/responseObject');
 
 var session = require('express-session');
 var mysql = require('mysql');
@@ -14,6 +15,7 @@ var sessionStore = new MySQLStore(config.mysqlParams);
 var routes = require('./routes/index');
 var accounts = require('./routes/accounts');
 var profiles = require('./routes/profile');
+var chatRoute = require('./routes/chatRoute');
 
 var app = express();
 var server = require('http').Server(app);
@@ -47,16 +49,19 @@ server.listen(80);
 
 //Authorize only signed in users
 var userAuth = function(req, res, next){
-  if(req.session && req.session.auth){
-    return next();
-  } else {
-    res.sendStatus(401);
-  }
+    if(req.session && req.session.auth){
+        return next();
+    } else {
+        res.render('error/error', {errorMessage : 'You must be signed into your account to do this!'}, function(err, html){
+            res.send(responseObject.generateResponseObject('<i class="fa fa-exclamation-triangle red"></i> Oops, something went wrong!', html));
+        });
+    }
 };
 
 app.use('/', routes);
 app.use('/accounts', accounts);
 app.use('/profile', userAuth, profiles);
+app.use('/chat', userAuth, chatRoute);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

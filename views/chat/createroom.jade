@@ -1,0 +1,24 @@
+p
+	| In your chat room, you will be able to set a password, kick and ban people from your chat room.
+br
+div.alert.alert-danger#errorDisplay(role='alert', style='display: none')
+form.form-horizontal#createRoomForm
+	div.form-group
+		label.col-sm-4.control-label(for='inputChatRoomName' maxlength='100') Chat Room Name
+		div.col-sm-8
+			input.form-control(type='text', name='inputChatRoomName', id='inputChatRoomName' required='true' value='')
+	div.form-group
+		label.col-sm-4.control-label(for='inputChatPassword') Password
+		div.col-sm-8
+			input.form-control(type='password', name='inputChatPassword', id='inputChatPassword' required='false' maxlength='128')
+	div.form-group
+		label.col-sm-4.control-label(for='inputConfirmPassword') Confirm Password
+		div.col-sm-8
+			input.form-control(type='password', name='inputConfirmPassword', id='inputConfirmPassword' required='false' maxlength='128')
+	div.form-group
+		label.col-sm-4.control-label(for='inputDescription') Description
+		div.col-sm-8
+			input.form-control(type='textarea', name='inputDescription', id='inputDescription' required='false' maxlength='5000')
+	div.form-group
+		div.col-sm-offset-5.col-sm-7
+			button.btn.btn-success.btn-lg(type='submit' onclick='createNewChatRoom()') Create Room

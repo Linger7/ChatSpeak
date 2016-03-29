@@ -17,6 +17,14 @@ a {
   color: #00B7FF;
 }
 
+.red{
+  color: #FC575E;
+}
+
+.green{
+  color: #66CC99;
+}
+
 .center {
   text-align: center;
 }
@@ -24,6 +32,7 @@ a {
 .floatRight{
   float: right;
 }
+
 
 /* == Navigation Bar Styling == */
 .navbar-default {
@@ -139,12 +148,19 @@ a {
 /*
   ChatRoom Row
 */
+.chatRoomRow.chatRoomActiveRow {
+  background: #66CC99 !important;
+}
+
 .chatRoomRow{
   /*border: solid black 1px;*/
   color: #333;
   padding: 8px;
   vertical-align: top;
   border-top: 1px solid #ddd;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .chatRoomRow:nth-child(even){
@@ -156,7 +172,7 @@ a {
 }
 
 .chatRoomRow:hover{
-  background: #44BBFF;
+  background: #44BBFF !important;
   font-weight: 900;
 }
 

@@ -127,7 +127,11 @@ function joinChatRoom(chatroomID, socket){
                     if (err) {
                         socket.emit('socket_chatError', {error: err});
                     } else {
-                        socket.emit('socket_chatLoadChatRoomMessages', data);
+                        var returnData = {};
+                        returnData.messages = data;
+                        returnData.currentRoom = chatroomID;
+
+                        socket.emit('socket_chatLoadChatRoomMessages', returnData);
                     }
                 });
             }
