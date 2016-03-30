@@ -6,7 +6,9 @@ var socket = io.connect('http://localhost');
 
 //Received an error message
 socket.on('socket_chatError', function(obj){
-    alert(obj.error);
+    $('#mainModal').modal('show');
+    $('#mainModalTitle').html('<i class="fa fa-exclamation-triangle red"></i> Oops, something went wrong!');
+    $('#mainModalBody').html(obj.error);
 });
 
 //Received a message from the server
@@ -25,22 +27,28 @@ socket.on('socket_chatLoadChatRoomInfo', function(obj){
 //Load all chat rooms
 socket.on('socket_chatLoadAllChatRooms', function(obj){
     //Clear previous chat rooms (should never be any)
-    var chatRoomsContainer = $('#ChatRoomsContainer');
-    chatRoomsContainer.html("");
+    $('#ChatRoomsContainer').html("");
 
-    var passwordText;
-    var hasPassword;
     for(index in obj){
-        if(obj[index].password){
-            hasPassword = true;
-            passwordText = '<i class="fa fa-lock"></i>';
-        } else {
-            hasPassword = false;
-            passwordText = '';
-        }
-        chatRoomsContainer.append('<div class="chatRoomRow" hasPassword="' + hasPassword + '" id="' + obj[index].chatroomID + '" chatroomID="' + obj[index].chatroomID + '" onclick="attemptToJoinChatRoom(this)">' + obj[index].name + '<span class="floatRight onTop">' + passwordText + '</span></div>');
+        addChatRoomToList(obj[index]);
     }
 });
+
+//A new chat room was created and broadcasted
+socket.on('socket_chatSendNewChatRoom', function(obj){
+    addChatRoomToList(obj);
+});
+
+function addChatRoomToList(obj){
+    var hasPassword = false;
+    var passwordText = '';
+    if(obj.password){
+        hasPassword = true;
+        passwordText = '<i class="fa fa-lock"></i>';
+    }
+    $('#ChatRoomsContainer').append('<div class="chatRoomRow" hasPassword="' + hasPassword + '" id="' + obj.chatroomID + '" chatroomID="' + obj.chatroomID + '" onclick="attemptToJoinChatRoom(this)">' + obj.name + '<span class="floatRight onTop">' + passwordText + '</span></div>');
+}
+
 
 //Received chat room message history from server
 socket.on('socket_chatLoadChatRoomMessages', function(obj){
@@ -52,6 +60,11 @@ socket.on('socket_chatLoadChatRoomMessages', function(obj){
 
     //Set this chat room row to be active
     $('#' + obj.currentRoom).addClass('chatRoomActiveRow');
+
+    //Scroll to this chat room in the list
+    $('#ChatRoomsContainer').animate({
+        scrollTop: $('#' + obj.currentRoom).offset().top
+    }, 3000);
 
     var messages = obj.messages;
     for(index in messages){

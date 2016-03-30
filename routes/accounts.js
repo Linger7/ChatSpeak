@@ -79,7 +79,6 @@ router.post('/register', guestAuth, function(req, res, next){
     var email = req.body.inputEmail;
     var password = req.body.inputPassword;
 
-    //Throw a 404 to someone who bypassed clientside validation, temporarily, to do later
     if(userName === null || userName.length < 4 || userName.length > 25){
         res.send(responseObject.generateErrorObject("Username must be between 4 and 25 characters long."));
     } else if(email === null || email.length > 255 || email.length == 0 || !validator.isEmail(email)){
@@ -87,20 +86,23 @@ router.post('/register', guestAuth, function(req, res, next){
     } else if(password === null || password.length < 6 || password.length > 128){
         res.send(responseObject.generateErrorObject("Password must be between 6 and 128 characters long."));
     }
+    
     bcrypt.genSalt(10, function(err, salt) {
-        bcrypt.hash(password, salt, function(err, hash) {
-            if(err){
+        bcrypt.hash(password, salt, function (err, hash) {
+            if (err) {
                 console.log(err);
                 res.send(responseObject.generateErrorObject("Unable to encrypt password!"));
             } else {
-                user.createUser(userName, hash, email, req.connection.remoteAddress, function(err, data){
-                    if(err){
+                user.createUser(userName, hash, email, req.connection.remoteAddress, function (err, data) {
+                    if (err) {
                         res.send(responseObject.generateErrorObject(err));
                     } else {
-                        res.render('registration/success', {params: {username: xssFilters.inHTMLData(data.username)}}, function (err, html) {
-                            data.body = html;
-                            res.send(data);
-                        });
+                        req.session.auth = true;
+                        req.session.uid = data.uid;
+                        req.session.username = data.username;
+                        req.session.avatarPath = data.avatarPath;
+
+                        res.send(data);
                     }
                 });
             }

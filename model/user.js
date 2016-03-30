@@ -86,9 +86,9 @@ exports.createUser = function(username, hashedPW, email, ipAddress, callback){
             } else {
                 var customResponseObject = {};
                 customResponseObject.state = "Success";
-                customResponseObject.title = "<i class='fa fa-thumbs-up'></i> Congratulations!";
                 customResponseObject.avatarPath = config.defaults.avatarPath;
                 customResponseObject.username = username;
+                customResponseObject.uid = rows.insertId;
                 return callback(null, customResponseObject);
             }
         });

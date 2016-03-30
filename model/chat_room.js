@@ -23,7 +23,7 @@ exports.getChatRoomInfo = function(chatroomID, callback){
 
 exports.getChatRooms = function(callback){
     pool.getConnection(function (err, connection) {
-        connection.query('SELECT uid AS chatroomID, name, password, priority FROM chat_room ORDER BY PRIORITY DESC', function (err, rows, fields) {
+        connection.query('SELECT uid AS chatroomID, name, password, priority FROM chat_room ORDER BY PRIORITY DESC, DATE_CREATED', function (err, rows, fields) {
             connection.destroy();
             if(err){
                 console.log(err);
@@ -46,7 +46,8 @@ exports.createChatRoom = function(name, password, description, owner, callback){
                    return callback("DB Error: " + err);
                }
            } else {
-               return callback(null);
+               //Return the chat room ID
+               return callback(null, rows.insertId);
            }
        });
     });
