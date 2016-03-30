@@ -24,6 +24,25 @@ $(document).ready(function(){
         $('#chatAreaSecondContainer').height(firstRowHeight);
         $('#chatAreaParticipantsContainer').height(firstRowHeight * 0.50);
         $('#chatAreaRoomListContainer').height(firstRowHeight * 0.50);
+
+        //Calculate the full height of the first row (subtract 25 due to offset from the top) and then split it for the two sub rows
+        var secondColumnMaxHeight = firstRowHeight - 25;
+        var secondColumnIndividualHeight = secondColumnMaxHeight / 2;
+
+        //Adjust Chat Participants Area Height
+        $('#chatAreaParticipantsContainer').css('max-height', secondColumnIndividualHeight + 'px');
+        $('#chatAreaParticipantsContainer').css('height', secondColumnIndividualHeight);
+
+        var chatParticipantsHeadingHeight = $('#ChatParticipantsHeading').height();
+        $('#ChatParticipantsContainer').height(secondColumnIndividualHeight - chatParticipantsHeadingHeight - 25);
+
+        //Adjust Chat Rooms Area Height
+        $('#chatAreaRoomListContainer').css('max-height', secondColumnIndividualHeight + 'px');
+        $('#chatAreaRoomListContainer').css('height', secondColumnIndividualHeight);
+
+        var chatRoomsHeadingHeight = $('#ChatRoomsHeading').height();
+        $('#ChatRoomsContainer').height(secondColumnIndividualHeight - chatRoomsHeadingHeight);
+
     });
 });
 

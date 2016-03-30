@@ -29,10 +29,17 @@ a {
   text-align: center;
 }
 
+.wrap {
+  position: relative;
+}
+
 .floatRight{
   float: right;
 }
 
+.floatLeft{
+  float: left;
+}
 
 /* == Navigation Bar Styling == */
 .navbar-default {
@@ -132,7 +139,7 @@ a {
 /*
   ChatRooms container
 */
-#chatAreaRoomListContainer{
+#ChatRoomsContainer{
   height: 100%;
   width: 100%;
   overflow: auto;
@@ -142,12 +149,13 @@ a {
   Heading for Chat Room List
 */
 #ChatRoomsHeading{
-  margin-top: 5px;
+  margin-top: 0px;
 }
 
 /*
   ChatRoom Row
 */
+
 .chatRoomRow.chatRoomActiveRow {
   background: #66CC99 !important;
 }
@@ -163,6 +171,11 @@ a {
   overflow: hidden;
 }
 
+.ellipisText{
+  white-space: nowrap;
+  text-overflow: ellipsis;;
+}
+
 .chatRoomRow:nth-child(even){
   background: #F9F9F9;
 }
@@ -175,6 +188,22 @@ a {
   background: #44BBFF !important;
   font-weight: 900;
 }
+
+.roomFloatRight{
+  position: absolute;
+  top: 5px;
+  right: 0;
+}
+
+.roomFloatRight.passwordFloat{
+  right: 25px;
+}
+
+.roomFloatLeft{
+  float: left;
+}
+
+
 
 
 /*Time before username and message*/
@@ -200,6 +229,22 @@ a {
   margin-bottom: 3px;
 }
 
+
+/*
+  Chat Participants
+*/
+#ChatParticipantsHeading{
+  margin-top: 0px;
+}
+#ChatParticipantsContainer{
+  overflow: auto;
+}
+
+.chatParticipantsAvatar{
+  height: 18px;
+  width: 18px;
+  border-radius: 2px;
+}
 
 
 

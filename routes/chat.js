@@ -18,14 +18,6 @@ module.exports = function (io) {
     io.on('connection', function (socket) {
         io.emit('socket_chatTotalParticipantCount', io.engine.clientsCount);
 
-
-        //Join the default lobby chat room
-        joinChatRoom(config.defaults.defaultChatRoom, io, socket, function(err){
-            if(err){
-                socket.emit('socket_chatError', {error : err});
-            }
-        });
-
         //Get all the chat rooms
         getChatRooms(function(err, data){
             if(err){
@@ -35,16 +27,17 @@ module.exports = function (io) {
             }
         });
 
+        //Join the default lobby chat room
+        joinChatRoom(config.defaults.defaultChatRoom, io, socket, function(err){
+            if(err){
+                socket.emit('socket_chatError', {error : err});
+            }
+        });
+
         socket.on('disconnect', function () {
             io.emit('socket_chatTotalParticipantCount', io.engine.clientsCount);
             if(socket.handshake.session.chatroom){
-                var length = 0;
-                if(io.sockets.adapter.rooms[socket.handshake.session.chatroom]){
-                    length = io.sockets.adapter.rooms[socket.handshake.session.chatroom].length - 1;
-                }
-
-                io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', length);
-                io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: socket.handshake.session.chatroom, participants: length});
+                userLeftChatRoom(socket.handshake.session.chatroom, io, socket)
             }
         });
 
@@ -177,13 +170,8 @@ function joinChatRoom(chatroomID, io, socket, callback){
                 }
 
                 //Leave the previous chat room, if it exists
-                //Lower count of previous chat room users
                 if(socket.handshake.session.chatroom){
-                    //Subtract one, since the actual leave doesn't occur until after the message is sent
-                    //Leave after the broadcast, as the array index may not exist, thus length cannot be accessed
-                    io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', io.sockets.adapter.rooms[socket.handshake.session.chatroom].length - 1);
-                    io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: socket.handshake.session.chatroom, participants: io.sockets.adapter.rooms[socket.handshake.session.chatroom].length - 1});
-                    socket.leave(socket.handshake.session.chatroom);
+                    userLeftChatRoom(socket.handshake.session.chatroom, io, socket);
                 }
 
                 //Update this user's current room
@@ -196,12 +184,29 @@ function joinChatRoom(chatroomID, io, socket, callback){
                 //Update total participant label
                 io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: chatroomID, participants: io.sockets.adapter.rooms[chatroomID].length});
 
+                //Update current participants in this chat
+                var clients_in_the_room = io.sockets.adapter.rooms[chatroomID].sockets;
+                var users = [];
+                for(index in clients_in_the_room){
+                    var currentSession = io.sockets.connected[index].handshake.session;
+                    var user = {};
+                    if(currentSession.username){
+                        user.username = xssFilters.inHTMLData(currentSession.username);
+                        user.avatarPath = currentSession.avatarPath;
+                    } else {
+                        user.username = "Guest";
+                        user.avatarPath = config.defaults.avatarPath;
+                    }
+                    users.push(user);
+                }
+                io.in(socket.handshake.session.chatroom).emit('socket_chatUpdateParticipants', users);
+
+                //Send chat room info
                 var data = data[0];
                 data.name = xssFilters.inHTMLData(data.name);
                 data.description = xssFilters.inHTMLData(data.description);
                 data.owner = xssFilters.inHTMLData(data.username);
 
-                //Send chat room info
                 socket.emit('socket_chatLoadChatRoomInfo', data);
 
                 //Load chat room messages
@@ -221,6 +226,43 @@ function joinChatRoom(chatroomID, io, socket, callback){
             }
         }
     });
+}
+
+//User left a chat room, update counts and participant list
+function userLeftChatRoom(oldChatRoomID, io, socket){
+    socket.leave(socket.handshake.session.chatroom);
+
+    var clients_in_the_room = io.sockets.adapter.rooms[oldChatRoomID];
+
+    //If the person leaving is the only person in the chat room, then the room no longer exists
+    if(clients_in_the_room){
+        //Update Total Global Count
+        io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: oldChatRoomID, participants: clients_in_the_room.length});
+
+        //Update Participants in a chat room
+        if(clients_in_the_room.sockets) {
+            var sockets = clients_in_the_room.sockets;
+            var users = [];
+
+            for (index in sockets) {
+                var currentSession = io.sockets.connected[index].handshake.session;
+                var user = {};
+                if (currentSession.username) {
+                    user.username = xssFilters.inHTMLData(currentSession.username);
+                    user.avatarPath = currentSession.avatarPath;
+                } else {
+                    user.username = "Guest";
+                    user.avatarPath = config.defaults.avatarPath;
+                }
+                users.push(user);
+            }
+
+            io.in(socket.handshake.session.chatroom).emit('socket_chatUpdateParticipants', users);
+        }
+
+    } else {
+        io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: oldChatRoomID, participants: 0});
+    }
 }
 
 //Get all the chat rooms
