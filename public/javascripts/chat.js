@@ -4,6 +4,23 @@
  */
 var socket = io.connect('http://localhost');
 
+//Received update on total users in chat
+socket.on('socket_chatTotalParticipantCount', function(count){
+   $('#ChatRoomsTotalUsers').html(count);
+});
+
+//TODO Optimize this to one call
+//Received update on total users in a specific chat room
+socket.on('socket_chatTotalChatCount', function(count){
+    if(!count) count = 0;
+    $('#ChatRoomsCurrentChatUsers').html(count);
+});
+
+//Received update on total users in a specific chat room for list
+socket.on('socket_chatTotalChatCountListUpdate', function(obj){
+    $('#' + obj.chatroomID + 'Row').html(obj.participants);
+});
+
 //Received an error message
 socket.on('socket_chatError', function(obj){
     $('#mainModal').modal('show');
@@ -39,16 +56,17 @@ socket.on('socket_chatSendNewChatRoom', function(obj){
     addChatRoomToList(obj);
 });
 
-function addChatRoomToList(obj){
+function addChatRoomToList(obj) {
     var hasPassword = false;
     var passwordText = '';
-    if(obj.password){
+    if (obj.password) {
         hasPassword = true;
         passwordText = '<i class="fa fa-lock"></i>';
     }
-    $('#ChatRoomsContainer').append('<div class="chatRoomRow" hasPassword="' + hasPassword + '" id="' + obj.chatroomID + '" chatroomID="' + obj.chatroomID + '" onclick="attemptToJoinChatRoom(this)">' + obj.name + '<span class="floatRight onTop">' + passwordText + '</span></div>');
+    $('#ChatRoomsContainer').append('<div class="chatRoomRow" hasPassword="' + hasPassword + '" id="' + obj.chatroomID + '" chatroomID="' + obj.chatroomID + '" onclick="attemptToJoinChatRoom(this)">' + obj.name +
+        '<span class="floatRight" style="padding-left: 5px;">' + passwordText + '</span>' +
+        '<span class="floatRight badge" id="' + obj.chatroomID + 'Row">0</span></div>');
 }
-
 
 //Received chat room message history from server
 socket.on('socket_chatLoadChatRoomMessages', function(obj){

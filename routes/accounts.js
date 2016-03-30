@@ -86,7 +86,7 @@ router.post('/register', guestAuth, function(req, res, next){
     } else if(password === null || password.length < 6 || password.length > 128){
         res.send(responseObject.generateErrorObject("Password must be between 6 and 128 characters long."));
     }
-    
+
     bcrypt.genSalt(10, function(err, salt) {
         bcrypt.hash(password, salt, function (err, hash) {
             if (err) {

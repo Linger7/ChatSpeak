@@ -16,24 +16,36 @@ var parser = new BBCodeParser(BBCodeParser.defaultTags());
 module.exports = function (io) {
 
     io.on('connection', function (socket) {
-        console.log('A User Connected');
-        console.log(socket.handshake.session);
+        io.emit('socket_chatTotalParticipantCount', io.engine.clientsCount);
+
 
         //Join the default lobby chat room
-        joinChatRoom(config.defaults.defaultChatRoom, socket);
+        joinChatRoom(config.defaults.defaultChatRoom, io, socket, function(err){
+            if(err){
+                socket.emit('socket_chatError', {error : err});
+            }
+        });
 
         //Get all the chat rooms
         getChatRooms(function(err, data){
             if(err){
                 socket.emit('socket_chatError', {error : err});
             } else {
-                //Send all the chat rooms
                 socket.emit('socket_chatLoadAllChatRooms', data);
             }
         });
 
         socket.on('disconnect', function () {
-            console.log('User Disconnected');
+            io.emit('socket_chatTotalParticipantCount', io.engine.clientsCount);
+            if(socket.handshake.session.chatroom){
+                var length = 0;
+                if(io.sockets.adapter.rooms[socket.handshake.session.chatroom]){
+                    length = io.sockets.adapter.rooms[socket.handshake.session.chatroom].length - 1;
+                }
+
+                io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', length);
+                io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: socket.handshake.session.chatroom, participants: length});
+            }
         });
 
         //Chat Message was sent to server
@@ -69,7 +81,11 @@ module.exports = function (io) {
         });
 
         socket.on('socket_chatAttemptToJoinRoom', function(obj){
-            joinChatRoom(obj.chatroomID, socket);
+            joinChatRoom(obj.chatroomID, io, socket, function(err){
+                if(err){
+                    socket.emit('socket_chatError', {error : err});
+                }
+            });
         });
 
         router.post('/create/room', function(req, res, next){
@@ -98,12 +114,18 @@ module.exports = function (io) {
                             } else {
                                 res.render('chat/createsuccess', {params: {chatName: xssFilters.inHTMLData(chatName)}}, function (err, html) {
                                     sendNewChatRoom(chatRoomID, chatName, chatPassword, io, function(){
-                                        joinChatRoom(chatRoomID, socket);
+                                        joinChatRoom(chatRoomID, io, socket, function(err){
+                                            if(err){
+                                                socket.emit('socket_chatError', {error : err});
+                                            } else {
+                                                var data = {};
+                                                data.title = '<i class="fa fa-check-square green"></i> Chat Room Created!';
+                                                data.body = html;
+                                                res.send(data);
+                                            }
+                                        });
 
-                                        var data = {};
-                                        data.title = '<i class="fa fa-check-square green"></i> Chat Room Created!';
-                                        data.body = html;
-                                        res.send(data);
+
                                     });
                                 });
                             }
@@ -142,7 +164,7 @@ function commitMessage(message, socket, callback) {
 }
 
 //Join a chat room
-function joinChatRoom(chatroomID, socket){
+function joinChatRoom(chatroomID, io, socket, callback){
     chatRoom.getChatRoomInfo(chatroomID, function(err, data){
         if(err){
             return callback(err);
@@ -150,14 +172,29 @@ function joinChatRoom(chatroomID, socket){
             if(data.length == 0){
                 socket.emit('socket_chatError', {error: err});
             } else {
+                if(socket.handshake.session.chatroom === chatroomID){
+                    return callback(null);
+                }
+
                 //Leave the previous chat room, if it exists
+                //Lower count of previous chat room users
                 if(socket.handshake.session.chatroom){
+                    //Subtract one, since the actual leave doesn't occur until after the message is sent
+                    //Leave after the broadcast, as the array index may not exist, thus length cannot be accessed
+                    io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', io.sockets.adapter.rooms[socket.handshake.session.chatroom].length - 1);
+                    io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: socket.handshake.session.chatroom, participants: io.sockets.adapter.rooms[socket.handshake.session.chatroom].length - 1});
                     socket.leave(socket.handshake.session.chatroom);
                 }
 
                 //Update this user's current room
                 socket.handshake.session.chatroom = chatroomID;
                 socket.join(chatroomID);
+
+                //Update total count in this chat room
+                io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', io.sockets.adapter.rooms[chatroomID].length);
+
+                //Update total participant label
+                io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: chatroomID, participants: io.sockets.adapter.rooms[chatroomID].length});
 
                 var data = data[0];
                 data.name = xssFilters.inHTMLData(data.name);
@@ -177,7 +214,9 @@ function joinChatRoom(chatroomID, socket){
                         returnData.currentRoom = chatroomID;
 
                         socket.emit('socket_chatLoadChatRoomMessages', returnData);
+
                     }
+                    callback(null);
                 });
             }
         }
@@ -227,6 +266,26 @@ function sendNewChatRoom(uid, name, password, io, callback){
 
     io.emit('socket_chatSendNewChatRoom', chatRoom);
     return callback();
+}
+
+//Get all clients on a specific room
+function findClientsSocket(io, roomId, namespace) {
+    var res = []
+        , ns = io.of(namespace ||"/");    // the default namespace is "/"
+
+    if (ns) {
+        for (var id in ns.connected) {
+            if(roomId) {
+                var index = ns.connected[id].rooms.indexOf(roomId) ;
+                if(index !== -1) {
+                    res.push(ns.connected[id]);
+                }
+            } else {
+                res.push(ns.connected[id]);
+            }
+        }
+    }
+    return res;
 }
 
 router.get('/create/room', function(req, res, next){
