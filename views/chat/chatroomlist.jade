@@ -1,3 +1,4 @@
 h3#ChatRoomsHeading Chat Rooms
-	span.floatRight <i class="fa fa-plus-circle" style="color: green;" onclick="callCreateNewChatRoom()"></i>
+	if isAuthed
+		span.floatRight <i class="fa fa-plus-circle" style="color: green;" onclick="callCreateNewChatRoom()"></i>
 div#ChatRoomsContainer
