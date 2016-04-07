@@ -28,8 +28,11 @@ config.defaults = {};
 config.defaults.usergroup = 1;
 config.defaults.avatarPath = "images/default/avatar.png";
 config.defaults.logo = "images/logos/logo.png";
+
+
 config.defaults.maxChatMessageLength = 200;
 config.defaults.maxChatMessagesHistoryToLoad = 250;
 config.defaults.defaultChatRoom = 2;
+config.defaults.defaultChatRoomPriority = 10;
 
 module.exports = config;

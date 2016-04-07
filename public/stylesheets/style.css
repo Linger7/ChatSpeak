@@ -234,7 +234,7 @@ a {
   Chat Participants
 */
 #ChatParticipantsHeading{
-  margin-top: 0px;
+  margin-top: 5px;
 }
 #ChatParticipantsContainer{
   overflow: auto;

@@ -178,28 +178,35 @@ function joinChatRoom(chatroomID, io, socket, callback){
                 socket.handshake.session.chatroom = chatroomID;
                 socket.join(chatroomID);
 
-                //Update total count in this chat room
-                io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', io.sockets.adapter.rooms[chatroomID].length);
+                var room = io.sockets.adapter.rooms[chatroomID];
+                if(room){
+                    var length = room.length;
+                    if(length){
+                        //Update total count in this chat room
+                        io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', length);
 
-                //Update total participant label
-                io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: chatroomID, participants: io.sockets.adapter.rooms[chatroomID].length});
-
-                //Update current participants in this chat
-                var clients_in_the_room = io.sockets.adapter.rooms[chatroomID].sockets;
-                var users = [];
-                for(index in clients_in_the_room){
-                    var currentSession = io.sockets.connected[index].handshake.session;
-                    var user = {};
-                    if(currentSession.username){
-                        user.username = xssFilters.inHTMLData(currentSession.username);
-                        user.avatarPath = currentSession.avatarPath;
-                    } else {
-                        user.username = "Guest";
-                        user.avatarPath = config.defaults.avatarPath;
+                        //Update total participant label
+                        io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: chatroomID, participants: length});
                     }
-                    users.push(user);
+
+                    //Update current participants in this chat
+                    var clients_in_the_room = room.sockets;
+                    var users = [];
+                    for(index in clients_in_the_room){
+                        var currentSession = io.sockets.connected[index].handshake.session;
+                        var user = {};
+                        if(currentSession.username){
+                            user.username = xssFilters.inHTMLData(currentSession.username);
+                            user.avatarPath = currentSession.avatarPath;
+                        } else {
+                            user.username = "Guest";
+                            user.avatarPath = config.defaults.avatarPath;
+                        }
+                        users.push(user);
+                    }
+                    io.in(socket.handshake.session.chatroom).emit('socket_chatUpdateParticipants', users);
+
                 }
-                io.in(socket.handshake.session.chatroom).emit('socket_chatUpdateParticipants', users);
 
                 //Send chat room info
                 var data = data[0];
