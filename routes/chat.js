@@ -28,7 +28,7 @@ module.exports = function (io) {
         });
 
         //Join the default lobby chat room
-        joinChatRoom(config.defaults.defaultChatRoom, io, socket, function(err){
+        joinChatRoom(config.defaults.defaultChatRoom, null, io, socket, function(err){
             if(err){
                 socket.emit('socket_chatError', {error : err});
             }
@@ -74,9 +74,11 @@ module.exports = function (io) {
         });
 
         socket.on('socket_chatAttemptToJoinRoom', function(obj){
-            joinChatRoom(obj.chatroomID, io, socket, function(err){
+            joinChatRoom(obj.chatroomID, obj.password, io, socket, function(err){
                 if(err){
                     socket.emit('socket_chatError', {error : err});
+                } else {
+                    socket.emit('socket_closeModal');
                 }
             });
         });
@@ -101,13 +103,17 @@ module.exports = function (io) {
                         console.log(err);
                         res.send(responseObject.generateErrorObject("Unable to encrypt password!"));
                     } else {
+                        //Resolve hashing an empty password
+                        if(!chatPassword || chatPassword === ""){
+                            hash = chatPassword;
+                        }
                         chatRoom.createChatRoom(chatName, hash, chatDescription, req.session.uid, function(err, chatRoomID){
                             if(err){
                                 res.send(responseObject.generateErrorObject(err));
                             } else {
                                 res.render('chat/createsuccess', {params: {chatName: xssFilters.inHTMLData(chatName)}}, function (err, html) {
                                     sendNewChatRoom(chatRoomID, chatName, chatPassword, io, function(){
-                                        joinChatRoom(chatRoomID, io, socket, function(err){
+                                        joinChatRoom(chatRoomID, chatPassword, io, socket, function(err){
                                             if(err){
                                                 socket.emit('socket_chatError', {error : err});
                                             } else {
@@ -117,8 +123,6 @@ module.exports = function (io) {
                                                 res.send(data);
                                             }
                                         });
-
-
                                     });
                                 });
                             }
@@ -127,6 +131,30 @@ module.exports = function (io) {
                 });
             });
         });
+
+        router.get('/delete/room/:id', function(req, res, next){
+            var chatRoomID = req.params.id;
+            //Switch to the lobby then delete the channel
+            joinChatRoom(config.defaults.defaultChatRoom, null, io, socket, function(err){
+                if(err){
+                    socket.emit('socket_chatError', {error : err});
+                }
+                chatRoom.deleteChatRoom(chatRoomID, req.session.uid, function(err, rows){
+                    if(err){
+                        res.send(err);
+                    }
+                    //Get all the chat rooms
+                    getChatRooms(function(err, data){
+                        if(err){
+                            socket.emit('socket_chatError', {error : err});
+                        } else {
+                            socket.emit('socket_chatLoadAllChatRooms', data);
+                        }
+                    });
+                })
+            });
+        });
+
     });
 }
 
@@ -157,7 +185,7 @@ function commitMessage(message, socket, callback) {
 }
 
 //Join a chat room
-function joinChatRoom(chatroomID, io, socket, callback){
+function joinChatRoom(chatroomID, password, io, socket, callback){
     chatRoom.getChatRoomInfo(chatroomID, function(err, data){
         if(err){
             return callback(err);
@@ -165,74 +193,118 @@ function joinChatRoom(chatroomID, io, socket, callback){
             if(data.length == 0){
                 socket.emit('socket_chatError', {error: err});
             } else {
-                if(socket.handshake.session.chatroom === chatroomID){
-                    return callback(null);
-                }
-
-                //Leave the previous chat room, if it exists
-                if(socket.handshake.session.chatroom){
-                    userLeftChatRoom(socket.handshake.session.chatroom, io, socket);
-                }
-
-                //Update this user's current room
-                socket.handshake.session.chatroom = chatroomID;
-                socket.join(chatroomID);
-
-                var room = io.sockets.adapter.rooms[chatroomID];
-                if(room){
-                    var length = room.length;
-                    if(length){
-                        //Update total count in this chat room
-                        io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', length);
-
-                        //Update total participant label
-                        io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: chatroomID, participants: length});
-                    }
-
-                    //Update current participants in this chat
-                    var clients_in_the_room = room.sockets;
-                    var users = [];
-                    for(index in clients_in_the_room){
-                        var currentSession = io.sockets.connected[index].handshake.session;
-                        var user = {};
-                        if(currentSession.username){
-                            user.username = xssFilters.inHTMLData(currentSession.username);
-                            user.avatarPath = currentSession.avatarPath;
-                        } else {
-                            user.username = "Guest";
-                            user.avatarPath = config.defaults.avatarPath;
-                        }
-                        users.push(user);
-                    }
-                    io.in(socket.handshake.session.chatroom).emit('socket_chatUpdateParticipants', users);
-
-                }
-
-                //Send chat room info
                 var data = data[0];
-                data.name = xssFilters.inHTMLData(data.name);
-                data.description = xssFilters.inHTMLData(data.description);
-                data.owner = xssFilters.inHTMLData(data.username);
+                checkPassword(password, data.CHATROOMPASSWORD, function (error) {
+                    //If error (including invalid passwords, return an error)
+                    if (error) {
+                        return callback(error);
+                    }
 
-                socket.emit('socket_chatLoadChatRoomInfo', data);
+                    //Do not attempt to rejoin the same room
+                    if(socket.handshake.session.chatroom === chatroomID){
+                        return callback(null);
+                    }
 
-                //Load chat room messages
-                getChatRoomMessages(chatroomID, function (err, data) {
-                    if (err) {
-                        socket.emit('socket_chatError', {error: err});
-                    } else {
-                        var returnData = {};
-                        returnData.messages = data;
-                        returnData.currentRoom = chatroomID;
+                    //Leave the previous chat room, if it exists
+                    if(socket.handshake.session.chatroom){
+                        userLeftChatRoom(socket.handshake.session.chatroom, io, socket);
+                    }
 
-                        socket.emit('socket_chatLoadChatRoomMessages', returnData);
+                    //Update this user's current room
+                    socket.handshake.session.chatroom = chatroomID;
+                    socket.join(chatroomID);
+
+                    var room = io.sockets.adapter.rooms[chatroomID];
+                    if(room){
+                        var length = room.length;
+                        if(length){
+                            //Update total count in this chat room
+                            io.in(socket.handshake.session.chatroom).emit('socket_chatTotalChatCount', length);
+
+                            //Update total participant label
+                            io.emit('socket_chatTotalChatCountListUpdate', {chatroomID: chatroomID, participants: length});
+                        }
+
+                        //Update current participants in this chat
+                        var clients_in_the_room = room.sockets;
+                        var users = [];
+                        for(index in clients_in_the_room){
+                            var currentSession = io.sockets.connected[index]
+                            if(currentSession) {
+                                if (currentSession.handshake) {
+                                    if (currentSession.handshake.session) {
+                                        currentSession = io.sockets.connected[index].handshake.session;
+                                        var user = {};
+                                        if (currentSession.username) {
+                                            user.username = xssFilters.inHTMLData(currentSession.username);
+                                            user.avatarPath = currentSession.avatarPath;
+                                        } else {
+                                            user.username = "Guest";
+                                            user.avatarPath = config.defaults.avatarPath;
+                                        }
+                                        users.push(user);
+                                    }
+                                }
+                            }
+                        }
+                        io.in(socket.handshake.session.chatroom).emit('socket_chatUpdateParticipants', users);
 
                     }
-                    callback(null);
+
+                    //Send chat room info
+                    data.name = xssFilters.inHTMLData(data.name);
+                    data.description = xssFilters.inHTMLData(data.description);
+                    data.owner = xssFilters.inHTMLData(data.username);
+
+                    //If this person is the owner of the chat room, send them the delete chat room button
+                    if(data.userID === socket.handshake.session.uid){
+                        data.uid = data.userID;
+                        data.roomUID = data.roomID;
+                    }
+
+                    socket.emit('socket_chatLoadChatRoomInfo', data);
+
+                    //Load chat room messages
+                    getChatRoomMessages(chatroomID, function (err, data) {
+                        if (err) {
+                            socket.emit('socket_chatError', {error: err});
+                        } else {
+                            var returnData = {};
+                            returnData.messages = data;
+                            returnData.currentRoom = chatroomID;
+
+                            socket.emit('socket_chatLoadChatRoomMessages', returnData);
+
+                        }
+                        callback(null);
+                    });
                 });
             }
         }
     });
+}
+
+function checkPassword(password, chatRoomPassword, callback){
+    //Check if this channel has a password
+    if(chatRoomPassword){
+        if(!password || password === ""){
+            return callback("No password given!");
+        }
+        //Compare the passwords
+        bcrypt.compare(password, chatRoomPassword, function (err, result) {
+            if (err) {
+                return callback(err);
+            } else {
+                if (result) {
+                    return callback(null);
+                } else {
+                    return callback("Incorrect password!");
+                }
+            }
+        });
+    } else {
+        return callback(null);
+    }
 }
 
 //User left a chat room, update counts and participant list
@@ -342,5 +414,6 @@ router.get('/create/room', function(req, res, next){
         res.send(responseObject.generateResponseObject('<i class="fa fa-weixin"></i> Create Chat Room', html));
     });
 });
+
 
 module.exports.router = router;

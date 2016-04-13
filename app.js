@@ -16,6 +16,7 @@ var routes = require('./routes/index');
 var accounts = require('./routes/accounts');
 var profiles = require('./routes/profile');
 var chats = require('./routes/chat').router;
+var misc = require('./routes/misc');
 
 var app = express();
 var server = require('http').Server(app);
@@ -62,6 +63,7 @@ app.use('/', routes);
 app.use('/accounts', accounts);
 app.use('/profile', userAuth, profiles);
 app.use('/chat', userAuth, chats);
+app.use('/misc', misc);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

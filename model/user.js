@@ -10,7 +10,7 @@ var exports = {};
 //Return user information
 exports.getUserInfo = function(userID, callback){
     pool.getConnection(function(err, connection) {
-        connection.query('SELECT uid, username, email, avatar_path, usergroup_uid, date_created FROM USER WHERE uid = ?', [userID], function (err, rows, fields) {
+        connection.query('SELECT uid, username, email, avatar_path, usergroup_uid, date_created FROM user WHERE uid = ?', [userID], function (err, rows, fields) {
             connection.destroy();
             if (err) {
                 console.log(err);

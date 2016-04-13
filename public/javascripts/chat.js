@@ -26,6 +26,10 @@ socket.on('socket_chatUpdateParticipants', function(obj){
     }
 });
 
+socket.on('socket_closeModal', function(){
+    $('#mainModal').modal('hide');
+});
+
 //Received an error message
 socket.on('socket_chatError', function(obj){
     $('#mainModal').modal('show');
@@ -44,6 +48,13 @@ socket.on('socket_chatLoadChatRoomInfo', function(obj){
     $('#chatAreaChatRoomName').html(obj.name);
     $('#chatAreaDescription').html(obj.description);
     $('#chatAreaOwner').html(obj.owner);
+
+    //Display the delete button if this is the owner of the room
+    if(obj.uid){
+        $('#chatAreaOwner').append('<br />').append('<button type="button" class="btn btn-danger" onclick="deleteRoom(this)">Delete this Room</button>');
+        $('#chatAreaOwner').attr('roomUID', obj.roomUID);
+    }
+
 });
 
 //Load all chat rooms
@@ -166,17 +177,55 @@ function scroll(height, ele) {
     });
 };
 
+//TODO redo, send ID to server
+var currentChat;
 function attemptToJoinChatRoom(obj){
     var currentObj = $(obj);
-    var chatroomID = currentObj.attr('chatroomID');
     var hasPassword = currentObj.attr('hasPassword');
+    currentChat = currentObj.attr('chatroomID');
 
     //Display Password Modal and pass the password to socket
+    if(hasPassword !== "false"){
+        //Display Password Modal
+        setModalToLoading();
+        $.ajax({
+            url: "http://" + window.location.host + "/misc/chat/password",
+            data: {'chatroomID' : currentChat},
+            type: 'GET'
+        }).done(function(data) {
+            $('#mainModal').modal('show');
+            $('#mainModalTitle').html('<i class="fa fa-lock" aria-hidden="true"></i> Password');
+            $('#mainModalBody').html(data);
+        });
+    } else {
+        var dataToSend = {};
+        dataToSend.chatroomID = currentChat;
+
+        socket.emit('socket_chatAttemptToJoinRoom', dataToSend);
+    }
+}
+
+//Join a chat room passing a password
+function joinChatRoomPassword(){
     var dataToSend = {};
-    dataToSend.chatroomID = chatroomID;
-    dataToSend.password = "TODO";
+    dataToSend.chatroomID = currentChat;
+    dataToSend.password = $('#inputChatPassword').val();
+
+    setModalToLoading();
 
     socket.emit('socket_chatAttemptToJoinRoom', dataToSend);
+
+    event.preventDefault();
+    return false;
+}
+
+//Delete a chat room
+function deleteRoom(room){
+    $.ajax({
+        url: "http://" + window.location.host + "/chat/delete/room/" + $('#chatAreaOwner').attr('roomUID'),
+        type: 'GET'
+    }).done(function(data) {
+    });
 }
 
 //Call Modal to Create New Chat Room
@@ -213,7 +262,7 @@ function createNewChatRoom(){
     if(errors.length > 0){
         showErrors(errors);
     } else {
-        //Submit Registration Form
+        //Submit Create New Chat Room Form
         $.ajax({
             url: "http://" + window.location.host + "/chat/create/room",
             type: 'POST',
